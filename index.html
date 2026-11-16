@@ -242,7 +242,7 @@ const fmt = n => Math.round(n).toLocaleString('en-US');
 const ease = (rate, dt) => 1 - Math.exp(-rate * dt);
 
 // ---------------------------------------------------------------- constants
-const SLOPE = 0.32, G = 24, OLLIE = 12.5, RAMP_V = 32, CHAIN_WIN = 3.2, BOOST_DUR = 7;
+const SLOPE = 0.32, G = 24, OLLIE = 12.5, RAMP_V = 32, CHAIN_WIN = 3.0, BOOST_DUR = 7;
 
 const TIERS = [
   { name: 'Violet Spark',   min: 1,  hex: ['#e7c6ff', '#9d4dff', '#3b0f78'] },
@@ -864,6 +864,7 @@ const P = freshP();
 P.y = baseH(0, 0);
 const MAX_LIVES = 5;
 let infiniteLives = false; try { infiniteLives = localStorage.getItem('violetSlopesInfinite') === '1'; } catch (e) {}
+let groundT = 0;
 let lives = MAX_LIVES, shownLives = -1, celestialFrozen = false, asc = null;
 let runTime = 0, finished = false, stageIdx = -1, finishBonus = 0, stats = { tricks: 0, crashes: 0, bestCombo: 0 }, bestTime = 0;
 try { bestTime = +localStorage.getItem('violetSlopesBestTime') || 0; } catch (e) {}
@@ -1128,7 +1129,7 @@ function updateHUD() {
     elTier.style.color = col; elTier.style.textShadow = `0 0 14px ${col}, 0 0 34px ${col}`;
     elMult.textContent = '×' + mult(); elMult.style.color = col;
     elCP.textContent = fmt(chainPoints);
-    elBar.style.width = (P.grounded && !P.grind ? clamp(chainTimer / CHAIN_WIN, 0, 1) : 1) * 100 + '%';
+    elBar.style.width = clamp(1 - groundT / CHAIN_WIN, 0, 1) * 100 + '%';
   }
   elFill.style.width = meter + '%';
   const full = meter >= 99.9 && boostT <= 0 && P.state === 'ride';
@@ -1718,9 +1719,10 @@ function update(dt) {
   if (P.state === 'ride') checkObjects(prevX, prevZ);
   updateProgress(dt);
 
-  if ((chainCount > 0 || chainPoints > 0) && P.state === 'ride' && P.grounded && !P.grind) {
-    chainTimer -= dt; if (chainTimer <= 0) bankChain();
-  }
+  // bank the combo after 3 continuous seconds on the snow; scoring on the ground doesn't reset this,
+  // only a real jump (more than a bump-hop), a grind or a crash does
+  if (P.state === 'ride' && !P.grind && (P.grounded || P.airTime < 0.25)) groundT += dt; else groundT = 0;
+  if ((chainCount > 0 || chainPoints > 0) && groundT >= CHAIN_WIN) bankChain();
   updateRiderVisual(dt, steerIn, up);
   emitFire(dt);
   if (P.state !== 'ascend') updateCamera(dt);
