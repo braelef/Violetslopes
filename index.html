@@ -61,8 +61,22 @@
   h1{font-family:'Cinzel';font-weight:900;font-size:clamp(46px,9vw,96px);letter-spacing:.08em;line-height:1;background:linear-gradient(180deg,#fff 0%,#f1c9ff 30%,#b45cff 60%,#6a1fd6 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 24px rgba(170,70,255,.75));animation:breathe 3s ease-in-out infinite}
   @keyframes breathe{50%{filter:drop-shadow(0 0 40px rgba(200,100,255,1))}}
   .sub{font-family:'Cinzel';font-size:15px;letter-spacing:.35em;text-transform:uppercase;margin:14px 0 26px;color:#e2c4ff}
-  .controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 28px;text-align:left;font-size:14px;margin:0 auto 22px;max-width:560px}
-  .controls div{display:flex;gap:10px;align-items:center}
+  .overlay{overflow-y:auto}
+  #menu .panel{margin:auto;padding:22px 18px;max-width:920px}
+  #menu h1{font-size:clamp(36px,5.4vw,70px)}
+  @media (min-width:700px){#menu h1{white-space:nowrap}}
+  #menu .sub{margin:10px 0 18px;font-size:13px}
+  #menu .tiers{margin-bottom:18px}
+  .ctl{max-width:620px;margin:0 auto 10px;text-align:left;background:rgba(20,4,40,.55);border:1px solid rgba(200,150,255,.22);border-radius:18px;padding:6px 16px;box-shadow:0 0 30px rgba(120,40,220,.25)}
+  .ctl-h,.ctl-r{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:center}
+  .ctl-h{font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.55;padding:8px 0 6px}
+  .ctl-r{padding:5px 0;border-top:1px solid rgba(220,180,255,.1);font-size:14px;min-height:36px}
+  .ctl .act{font-weight:700}
+  .ctl .act small{font-weight:300;font-size:11.5px;opacity:.6;margin-left:6px}
+  @media (max-width:560px){.ctl .act small{display:block;margin-left:0}}
+  .ctl .keys{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px;opacity:.95}
+  .tip{font-size:12.5px;opacity:.7;margin:8px 0 12px;letter-spacing:.04em}
+  @media (max-width:560px){.ctl-h,.ctl-r{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}.ctl-h span:nth-child(3),.ctl-r span:nth-child(3){display:none}}
   kbd{display:inline-block;min-width:26px;padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.1);border:1px solid rgba(220,180,255,.35);font-family:'Outfit';font-weight:700;font-size:12px;text-align:center;color:#fff}
   .tiers{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:26px;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
   .tiers span{padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.15)}
@@ -134,20 +148,20 @@
   <div class="panel">
     <h1>VIOLET SLOPES</h1>
     <div class="sub">Ride the Violet Flame of Transmutation</div>
-    <div class="controls">
-      <div><kbd>A</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>→</kbd> carve · spin in air</div>
-      <div><kbd>SPACE</kbd> ollie · pop off rails</div>
-      <div><kbd>W</kbd> / <kbd>↑</kbd> tuck · frontflip in air</div>
-      <div><kbd>S</kbd> / <kbd>↓</kbd> <b>brake</b> (on the ground) · backflip in air</div>
-      <div><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> / <kbd>SHIFT</kbd> grabs</div>
-      <div><kbd>F</kbd> invoke the Violet Flame (when full)</div>
-      <div><kbd>P</kbd> pause (<kbd>R</kbd> start over) · <kbd>M</kbd> mute · <kbd>N</kbd> music</div>
-      <div>🎮 Stick/D-pad steer · <kbd>A</kbd> jump · <kbd>X</kbd><kbd>B</kbd><kbd>LB</kbd><kbd>RB</kbd> grabs · <kbd>Y</kbd> flame · <kbd>LT</kbd> brake · <kbd>Start</kbd> pause</div>
-      <div>Chain tricks, hoops &amp; grinds to raise the flame</div>
+    <div class="ctl">
+      <div class="ctl-h"><span></span><span>Keyboard</span><span>🎮 Controller</span></div>
+      <div class="ctl-r"><span class="act">Carve<small>spin in the air</small></span><span class="keys"><kbd>A</kbd><kbd>D</kbd><kbd>←</kbd><kbd>→</kbd></span><span class="keys">Left stick · D-pad</span></div>
+      <div class="ctl-r"><span class="act">Tuck<small>frontflip in the air</small></span><span class="keys"><kbd>W</kbd><kbd>↑</kbd></span><span class="keys">Stick up · <kbd>RT</kbd></span></div>
+      <div class="ctl-r"><span class="act">Brake<small>backflip in the air</small></span><span class="keys"><kbd>S</kbd><kbd>↓</kbd></span><span class="keys">Stick down · <kbd>LT</kbd></span></div>
+      <div class="ctl-r"><span class="act">Ollie<small>pop off a rail</small></span><span class="keys"><kbd>Space</kbd></span><span class="keys"><kbd>A</kbd></span></div>
+      <div class="ctl-r"><span class="act">Grab<small>hold in the air</small></span><span class="keys"><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd><kbd>Shift</kbd></span><span class="keys"><kbd>X</kbd><kbd>B</kbd><kbd>LB</kbd><kbd>RB</kbd></span></div>
+      <div class="ctl-r"><span class="act">Violet Flame boost<small>when the meter is full</small></span><span class="keys"><kbd>F</kbd></span><span class="keys"><kbd>Y</kbd></span></div>
+      <div class="ctl-r"><span class="act">Pause<small>then R to start over</small></span><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span class="keys"><kbd>Start</kbd></span></div>
+      <div class="ctl-r"><span class="act">Mute · music</span><span class="keys"><kbd>M</kbd><kbd>N</kbd></span><span class="keys"><kbd>Back</kbd></span></div>
     </div>
+    <div class="tip">Chain tricks, hoops &amp; grinds to change the colour of your flame</div>
     <div class="tiers" id="tierLegend"></div>
     <button class="go" id="startBtn">BEGIN DESCENT</button>
-    <div class="note">About 7 minutes to the bottom, in five stages — each steeper, twistier and more crowded — ending on a giant ramp into the sun. You have five lives; every wipeout costs one.</div>
     <div class="credit">Music: <i>The Blue Danube</i>, Op. 314 (Johann Strauss II) — Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 2024. Recording courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</div>
   </div>
 </div>
@@ -1130,7 +1144,7 @@ function land(h) {
   if (r.half % 2 === 1) P.switch = !P.switch;
   P.spin = sw; P.flip = fw;
   P.airTime = 0; P.grabUsed = null; P.grabTime = 0; P.grab = null;
-  if (air > 0.5) { burst(P.x, P.y + 0.2, P.z, 30, PAL_SNOW, 6, 0.7, -8, 0.8); shake = Math.max(shake, Math.min(0.6, air * 0.2)); noise(0.25, 500, 1, 0.25); rumble(Math.min(0.8, air * 0.3), 0.3, 140); }
+  if (air > 0.5) { burst(P.x, P.y + 0.2, P.z, 30, PAL_SNOW, 6, 0.7, -8, 0.8); shake = Math.max(shake, Math.min(0.6, air * 0.2)); noise(0.25, 500, 1, 0.14); rumble(Math.min(0.8, air * 0.3), 0.3, 140); }
 }
 function crash(reason) {
   if (P.state === 'crash') return;
@@ -1435,7 +1449,7 @@ function updateWorld(dt) {
 function updateAudio() {
   if (!actx) return;
   const sp = Math.hypot(P.vx, P.vz), t = actx.currentTime;
-  windGain.gain.setTargetAtTime(mode === 'play' ? clamp(sp / 60, 0, 1) * (P.grounded ? 0.28 : 0.16) : 0.03, t, 0.1);
+  windGain.gain.setTargetAtTime(mode === 'play' ? clamp(sp / 84, 0, 1) * (P.grounded ? 0.13 : 0.07) : 0.02, t, 0.1);
   windFilter.frequency.setTargetAtTime(250 + sp * 22 + (P.grounded ? 0 : 400), t, 0.1);
   grindGain.gain.setTargetAtTime(P.grind ? 0.12 : 0, t, 0.03);
   padFilter.frequency.setTargetAtTime(400 + meter * 10 + (boostT > 0 ? 1800 : 0), t, 0.4);
