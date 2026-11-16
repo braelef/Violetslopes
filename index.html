@@ -312,7 +312,8 @@ function speedCap(s) {
   const into = s - i * COURSE_L / 5;
   return lerp(STAGE_CAPS[i - 1], STAGE_CAPS[i], clamp(into / 400, 0, 1)) / 3.6;
 }
-const capNow = () => speedCap(-P.z) * (boostT > 0 ? 1.15 : 1);
+const BOOST_OVER = 25; // m/s (+90 km/h) the Violet Flame boost may exceed the stage limit
+const capNow = () => speedCap(-P.z) + (boostT > 0 ? BOOST_OVER : 0);
 function nearDrop(s) { for (const q of sections) if (q.type === 'drop' && s > q.s0 - 25 && s < q.s1 + 110) return true; return false; }
 function sectionTypeAt(s) { for (const q of sections) if (s >= q.s0 && s < q.s1) return q.type; return null; }
 const ramps = [], rails = [], hoops = [], orbs = [], pads = [], obstacles = [];
@@ -1095,7 +1096,8 @@ function updateHUD() {
   elScore.textContent = fmt(score);
   const sp = Math.hypot(P.vx, P.vz);
   elSpeed.textContent = Math.round(sp * 3.6);
-  elLimit.textContent = Math.round(speedCap(-P.z) * 3.6 / 5) * 5;
+  elLimit.textContent = (boostT > 0 ? '✦ ' : '') + Math.round(capNow() * 3.6 / 5) * 5;
+  elLimit.parentElement.style.color = boostT > 0 ? '#ffd36a' : '';
   elDist.textContent = fmt(Math.max(0, COURSE_L + P.z));
   elTime.textContent = fmtTime(runTime);
   elProg.style.width = clamp(-P.z / COURSE_L, 0, 1) * 100 + '%';
@@ -1239,7 +1241,8 @@ function startGrind(r) {
 function updateGrind(dt) {
   const r = P.grind;
   let sp = Math.hypot(P.vx, P.vz);
-  sp = clamp(sp + (G * SLOPE * 0.4 - 1.2) * dt + (boostT > 0 ? 12 * dt : 0), 14, Math.max(14, capNow()));
+  sp = clamp(sp + (G * SLOPE * 0.4 - 1.2) * dt + (boostT > 0 ? 20 * dt : 0), 14, Math.max(14, sp, capNow()));
+  if (sp > capNow()) sp = Math.max(capNow(), sp - 9 * dt);
   P.vx = r.fx * sp; P.vz = r.fz * sp;
   P.x += P.vx * dt; P.z += P.vz * dt;
   P.x += (railX(r, P.z) - P.x) * ease(14, dt);
@@ -1277,11 +1280,11 @@ function updateRide(dt, steerIn, up, down) {
     } else {
       const hx = Math.sin(P.heading), hz = -Math.cos(P.heading);
       const gradeAlong = clamp(baseH(P.x, P.z) - baseH(P.x + hx, P.z + hz), -1.5, 2.0);
-      const acc = G * gradeAlong * 1.05 + (boostT > 0 ? 16 : 0) + (up ? 3 : 0);
-      const drag = (up ? 0.00108 : 0.0018) * sp * sp;
+      const acc = G * gradeAlong * 1.05 + (boostT > 0 ? 30 : 0) + (up ? 3 : 0);
+      const drag = (up ? 0.00108 : 0.0018) * sp * sp * (boostT > 0 ? 0.35 : 1);
       const fric = (down || finished ? 18 : 0.8) + Math.abs(P.steer) * sp * 0.06;
       sp = Math.max(finished ? 0 : 7, sp + (acc - drag - fric) * dt);
-      const cap = capNow(); if (sp > cap) sp = Math.max(cap, sp - 30 * dt);
+      const cap = capNow(); if (sp > cap) sp = Math.max(cap, sp - (boostT > 0 ? 30 : 14) * dt);
     }
     P.onRamp = onRamp;
     const dx = Math.sin(P.heading), dz = -Math.cos(P.heading), grip = ease(onRamp ? 24 : 9, dt);
