@@ -39,7 +39,7 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
   - 🔥 **Mega Thrusters** (6 s): rocket to 400 km/h, then ease back down to the stage limit.
 - **The course.** It is the same fixed, seeded course every run. It curves more, gets steeper and fills with more obstacles as you descend. Along the way are steep walls ("Amethyst Wall"), cliff drops ("Leap of Faith") and rollers. Top speed rises stage by stage: 120, 165, 210, 255, then 300 km/h in the final stage. The Violet Flame boost breaks the limit by up to 90 km/h, then eases back down when it ends.
 - **Lives.** You have five. Every wipeout costs one, and at zero you start over. Switch to infinite lives with the ✦ Lives button on the start or pause screen (no lives bonus at the finish).
-- **The ending.** The last 2.6 km is The Final Straight: long, steep and dead straight, with no obstacles, just orbs and surge pads. The speed limit climbs from 300 to 380 km/h. It funnels into a giant ramp that launches you into the violet sun, and **YOU WIN**.
+- **The ending.** The last 2.6 km is The Final Straight: long, steep and dead straight, with no obstacles, just orbs and surge pads. The speed limit climbs from 300 to 1,200 km/h, with a strong tailwind to get you there. It funnels into a giant ramp that launches you into the violet sun, and **YOU WIN**.
 
 ## Credits
 
