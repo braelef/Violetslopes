@@ -1,6 +1,6 @@
 # Violet Slopes
 
-A Three.js snowboarding game themed on the Violet Flame of the Ascended Masters. Ride a 26 km mountain in five stages. Chain tricks, hoops and grinds to change the colour of your violet-fire trail, and finish on a giant ramp that launches you into the sun.
+A Three.js snowboarding game themed on the Violet Flame of the Ascended Masters. Ride a 19 km mountain in five stages. Chain tricks, hoops and grinds to change the colour of your violet-fire trail, and finish on a giant ramp that launches you into the sun.
 
 ## Play
 
@@ -31,7 +31,7 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 
 - **Combos.** Tricks, hoops and grinds raise the multiplier. The fire trail changes through five tiers: Violet Spark, Violet Flame, Amethyst Blaze, Transmutation and Ascension. Points bank after 3 seconds without a new combo move.
 - **Violet Flame boost.** Combo moves fill the meter. When it is full, it stays full until you use it, and while it waits the meter glows and a button prompt flashes. The boost gives 7 seconds of extra speed and double points, and you burn through trees instead of crashing into them.
-- **The course.** It is the same fixed, seeded course every run. It curves more, gets steeper and fills with more obstacles as you descend. Along the way are steep walls ("Amethyst Wall"), cliff drops ("Leap of Faith") and rollers. Top speed is about 300 km/h in a tuck.
+- **The course.** It is the same fixed, seeded course every run. It curves more, gets steeper and fills with more obstacles as you descend. Along the way are steep walls ("Amethyst Wall"), cliff drops ("Leap of Faith") and rollers. Top speed rises stage by stage: 120, 165, 210, 255, then 300 km/h in the final stage. The Violet Flame boost goes about 15% over the limit.
 - **Lives.** You have five. Every wipeout costs one, and at zero you start over.
 - **The ending.** The run funnels into a giant ramp that launches you into the violet sun, and **YOU WIN**.
 

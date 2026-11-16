@@ -128,6 +128,7 @@
 <div class="hud" id="tr">
   <div class="lbl">Speed</div>
   <div class="mid"><span id="speed">0</span> <span style="font-size:13px;opacity:.7">km/h</span></div>
+  <div class="small">limit <span id="limit">120</span> km/h</div>
   <div class="small"><span id="dist">0</span> m to the finish</div>
   <div class="small"><span id="runTime">0:00.0</span></div>
   <button id="camBtn" title="Change camera (C)">🎥 <span>Chase</span> <kbd>C</kbd></button>
@@ -247,7 +248,7 @@ const legend = document.getElementById('tierLegend');
 TIERS.forEach(t => { const s = document.createElement('span'); s.textContent = t.name + ' ×' + t.min; s.style.color = t.hex[1]; s.style.borderColor = t.hex[1] + '88'; s.style.textShadow = '0 0 10px ' + t.hex[1]; legend.appendChild(s); });
 
 // ---------------------------------------------------------------- course
-const COURSE_L = 26000, SEED = 7777777;
+const COURSE_L = 19000, SEED = 7777777;
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 let rng = mulberry32(SEED);
 const srand = (a, b) => a + rng() * (b - a);
@@ -303,6 +304,15 @@ function baseH(x, z) {
 // the run narrows into a funnel that feeds the final ramp
 const RAMP_S = COURSE_L - 70, RAMP_LEN = 42, RAMP_H = 22;
 function finaleLimit(s) { let f = clamp((s - (COURSE_L - 520)) / 380, 0, 1); f = f * f * (3 - 2 * f); return lerp(40, 19, f); }
+// top speed rises stage by stage (km/h), easing in over the first 400 m of each new stage
+const STAGE_CAPS = [120, 165, 210, 255, 300];
+function speedCap(s) {
+  const f = clamp(s / COURSE_L, 0, 0.9999), i = Math.floor(f * 5);
+  if (i === 0) return STAGE_CAPS[0] / 3.6;
+  const into = s - i * COURSE_L / 5;
+  return lerp(STAGE_CAPS[i - 1], STAGE_CAPS[i], clamp(into / 400, 0, 1)) / 3.6;
+}
+const capNow = () => speedCap(-P.z) * (boostT > 0 ? 1.15 : 1);
 function nearDrop(s) { for (const q of sections) if (q.type === 'drop' && s > q.s0 - 25 && s < q.s1 + 110) return true; return false; }
 function sectionTypeAt(s) { for (const q of sections) if (s >= q.s0 && s < q.s1) return q.type; return null; }
 const ramps = [], rails = [], hoops = [], orbs = [], pads = [], obstacles = [];
@@ -1070,7 +1080,7 @@ function toggleMusic() {
 
 // ---------------------------------------------------------------- HUD
 const $ = id => document.getElementById(id);
-const elScore = $('score'), elBest = $('best'), elSpeed = $('speed'), elDist = $('dist'), elChain = $('chain'), elTier = $('tierName'), elMult = $('mult'), elCP = $('chainPts'), elBar = $('chainBar'), elMeter = $('meter'), elFill = $('meterFill'), elPop = $('popups'), elFlash = $('flash'), elLives = $('lives'), elTime = $('runTime'), elProg = $('progFill'), elStage = $('stageName');
+const elScore = $('score'), elBest = $('best'), elSpeed = $('speed'), elDist = $('dist'), elChain = $('chain'), elTier = $('tierName'), elMult = $('mult'), elCP = $('chainPts'), elBar = $('chainBar'), elMeter = $('meter'), elFill = $('meterFill'), elPop = $('popups'), elFlash = $('flash'), elLimit = $('limit'), elLives = $('lives'), elTime = $('runTime'), elProg = $('progFill'), elStage = $('stageName');
 const fmtTime = t => { const m = Math.floor(t / 60), sec = t - m * 60; return m + ':' + (sec < 10 ? '0' : '') + sec.toFixed(1); };
 elBest.textContent = fmt(best);
 function popup(text, cls = 'trick', color) {
@@ -1085,6 +1095,7 @@ function updateHUD() {
   elScore.textContent = fmt(score);
   const sp = Math.hypot(P.vx, P.vz);
   elSpeed.textContent = Math.round(sp * 3.6);
+  elLimit.textContent = Math.round(speedCap(-P.z) * 3.6 / 5) * 5;
   elDist.textContent = fmt(Math.max(0, COURSE_L + P.z));
   elTime.textContent = fmtTime(runTime);
   elProg.style.width = clamp(-P.z / COURSE_L, 0, 1) * 100 + '%';
@@ -1169,7 +1180,7 @@ function land(h) {
   const spL = Math.hypot(P.vx, P.vz);
   if (spL > 1) {
     const downhill = clamp(h - groundH(P.x + P.vx / spL, P.z + P.vz / spL), 0, 1);
-    const gain = clamp((P.vy - impactVy) * downhill * 0.35, 0, 14), ns = Math.min(spL + gain, 95);
+    const gain = clamp((P.vy - impactVy) * downhill * 0.35, 0, 14), ns = Math.min(spL + gain, Math.max(spL, capNow()));
     P.vx *= ns / spL; P.vz *= ns / spL;
   }
   if (P.airTime < 0.35) { P.flip = fw; P.spin = sw; }
@@ -1228,7 +1239,7 @@ function startGrind(r) {
 function updateGrind(dt) {
   const r = P.grind;
   let sp = Math.hypot(P.vx, P.vz);
-  sp = clamp(sp + (G * SLOPE * 0.4 - 1.2) * dt + (boostT > 0 ? 12 * dt : 0), 14, 84);
+  sp = clamp(sp + (G * SLOPE * 0.4 - 1.2) * dt + (boostT > 0 ? 12 * dt : 0), 14, Math.max(14, capNow()));
   P.vx = r.fx * sp; P.vz = r.fz * sp;
   P.x += P.vx * dt; P.z += P.vz * dt;
   P.x += (railX(r, P.z) - P.x) * ease(14, dt);
@@ -1261,7 +1272,7 @@ function updateRide(dt, steerIn, up, down) {
     let sp = Math.hypot(P.vx, P.vz);
     if (onRamp) {
       if (!P.onRamp) { tone(300, 0.4, 'triangle', 0.035); }
-      sp = Math.max(sp, rq.r.finale ? 70 : rq.r.v); P.lastRamp = rq.r; P.heading = lerp(P.heading, rq.r.a, ease(16, dt));
+      sp = Math.max(sp, rq.r.finale ? 70 : Math.min(rq.r.v, capNow())); P.lastRamp = rq.r; P.heading = lerp(P.heading, rq.r.a, ease(16, dt));
       const k = rq.lat * ease(4, dt); P.x -= rq.r.rx * k; P.z -= rq.r.rz * k;
     } else {
       const hx = Math.sin(P.heading), hz = -Math.cos(P.heading);
@@ -1269,7 +1280,8 @@ function updateRide(dt, steerIn, up, down) {
       const acc = G * gradeAlong * 1.05 + (boostT > 0 ? 16 : 0) + (up ? 3 : 0);
       const drag = (up ? 0.00108 : 0.0018) * sp * sp;
       const fric = (down || finished ? 18 : 0.8) + Math.abs(P.steer) * sp * 0.06;
-      sp = clamp(sp + (acc - drag - fric) * dt, finished ? 0 : 7, boostT > 0 ? 95 : 84);
+      sp = Math.max(finished ? 0 : 7, sp + (acc - drag - fric) * dt);
+      const cap = capNow(); if (sp > cap) sp = Math.max(cap, sp - 30 * dt);
     }
     P.onRamp = onRamp;
     const dx = Math.sin(P.heading), dz = -Math.cos(P.heading), grip = ease(onRamp ? 24 : 9, dt);
@@ -1346,7 +1358,7 @@ function checkObjects(prevX, prevZ) {
     if (p.used || !P.grounded) continue;
     if (Math.abs(P.z - p.z) < p.len / 2 && Math.abs(P.x - p.x) < p.w / 2) {
       p.used = true;
-      const sp = Math.hypot(P.vx, P.vz) || 1, ns = Math.min(sp + 18, 92);
+      const sp = Math.hypot(P.vx, P.vz) || 1, ns = Math.max(sp, Math.min(sp + 18, capNow() * 1.1));
       P.vx *= ns / sp; P.vz *= ns / sp;
       event(100, 'Violet Surge', false); meter = Math.min(100, meter + 8);
       burst(P.x, P.y + 0.5, P.z, 60, firePal, 8, 1, 4);
@@ -1515,7 +1527,7 @@ function updateWorld(dt) {
 function updateAudio() {
   if (!actx) return;
   const sp = Math.hypot(P.vx, P.vz), t = actx.currentTime;
-  windGain.gain.setTargetAtTime(0, t, 0.1); // snow/wind rush muted for now
+  windGain.gain.setTargetAtTime(mode === 'play' && P.state === 'ride' ? clamp(sp / 84, 0, 1) * (P.grounded && !P.grind ? 0.05 : 0.02) : 0, t, 0.15); // soft snow rush
   windFilter.frequency.setTargetAtTime(250 + sp * 22 + (P.grounded ? 0 : 400), t, 0.1);
   grindGain.gain.setTargetAtTime(P.grind ? 0.12 : 0, t, 0.03);
 }
@@ -1525,7 +1537,7 @@ function updateProgress(dt) {
   const s = -P.z;
   if (!finished) runTime += dt;
   let st = 0; STAGES.forEach((q, i) => { if (s / COURSE_L >= q.f) st = i; });
-  if (st !== stageIdx) { stageIdx = st; elStage.textContent = STAGES[st].name; popup('Stage ' + (st + 1) + ' · ' + STAGES[st].name, 'tier', '#e7c6ff'); }
+  if (st !== stageIdx) { stageIdx = st; elStage.textContent = STAGES[st].name; popup('Stage ' + (st + 1) + ' · ' + STAGES[st].name, 'tier', '#e7c6ff'); popup('Top speed ' + STAGE_CAPS[st] + ' km/h', 'minor', '#ffd36a'); }
   for (const q of sections) if (!q.told && s > q.s0 - 160 && s < q.s0) { q.told = true; popup(q.type === 'drop' ? '⚠ ' + q.name + ' ahead' : q.name, 'minor', q.type === 'drop' ? '#ffb0d0' : '#e7c6ff'); }
   if (!finished && s >= RAMP_S + RAMP_LEN - 1.2) startAscension();
 }
