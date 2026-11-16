@@ -114,6 +114,11 @@
   .sndBtn.off{opacity:.55;background:rgba(60,30,90,.35);text-decoration:line-through}
   .sndBtn kbd{min-width:0;padding:1px 6px;font-size:10px;text-decoration:none}
   body.touch .sndBtn kbd{display:none}
+  #pu{top:64px;left:50%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .25s;--puc:#ffd36a}
+  #pu.on{opacity:1}
+  #puName{font-family:'Cinzel';font-weight:900;font-size:18px;letter-spacing:.14em;color:var(--puc);text-shadow:0 0 12px var(--puc)}
+  #puWrap{width:200px;height:5px;margin:6px auto 0;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
+  #puFill{height:100%;width:100%;background:var(--puc);box-shadow:0 0 10px var(--puc)}
   #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:20;background:#12051f;font-size:16px;padding:30px;text-align:center}
 </style>
 </head>
@@ -137,6 +142,7 @@
   <div class="sndRow"><button class="sndBtn btnMusic"><i>🎵</i> Music <kbd>N</kbd></button><button class="sndBtn btnSfx"><i>🔊</i> Sound FX <kbd>M</kbd></button></div>
 </div>
 <div class="hud" id="prog"><div id="stageName">Valley of Grace</div><div id="progWrap"><div id="progFill"></div></div></div>
+<div class="hud" id="pu"><div id="puName"></div><div id="puWrap"><div id="puFill"></div></div></div>
 <div class="hud" id="chain">
   <div id="tierName">Violet Spark</div>
   <div id="multRow"><div id="mult">×1</div><div id="chainPts">0</div></div>
@@ -176,6 +182,7 @@
       <div class="ctl-r"><span class="act">Grab<small>hold in the air</small></span><span class="keys"><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd><kbd>Shift</kbd></span><span class="keys"><kbd>X</kbd> Indy · <kbd>B</kbd> Melon · <kbd>LB</kbd><kbd>RB</kbd></span></div>
       <div class="ctl-r"><span class="act">Violet Flame boost<small>when the meter is full</small></span><span class="keys"><kbd>F</kbd></span><span class="keys"><kbd>Y</kbd></span></div>
       <div class="ctl-r"><span class="act">Pause<small>then R to start over</small></span><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span class="keys"><kbd>Start</kbd></span></div>
+      <div class="ctl-r"><span class="act">Power-ups<small>ride through to collect</small></span><span class="keys" style="grid-column:span 2">★ invincible · 🚀 jetpack (hold Jump to fly) · 🥾 gravity boots · 🔥 thrusters to 400 km/h</span></div>
       <div class="ctl-r"><span class="act">Camera<small>4 views</small></span><span class="keys"><kbd>C</kbd> or 🎥 button</span><span class="keys"><kbd>R3</kbd> stick click</span></div>
       <div class="ctl-r"><span class="act">Music · sound FX<small>on / off</small></span><span class="keys"><kbd>N</kbd><kbd>M</kbd></span><span class="keys"><kbd>Back</kbd></span></div>
     </div>
@@ -324,10 +331,11 @@ function speedCap(s) {
   return lerp(STAGE_CAPS[i - 1], STAGE_CAPS[i], clamp(into / 400, 0, 1)) / 3.6;
 }
 const BOOST_OVER = 25; // m/s (+90 km/h) the Violet Flame boost may exceed the stage limit
-const capNow = () => speedCap(-P.z) + (boostT > 0 ? BOOST_OVER : 0);
+const THRUST_V = 400 / 3.6;
+const capNow = () => Math.max(speedCap(-P.z) + (boostT > 0 ? BOOST_OVER : 0), puOn('thrust') ? THRUST_V : 0);
 function nearDrop(s) { for (const q of sections) if (q.type === 'drop' && s > q.s0 - 25 && s < q.s1 + 110) return true; return false; }
 function sectionTypeAt(s) { for (const q of sections) if (s >= q.s0 && s < q.s1) return q.type; return null; }
-const ramps = [], rails = [], hoops = [], orbs = [], pads = [], obstacles = [];
+const ramps = [], rails = [], hoops = [], orbs = [], pads = [], obstacles = [], powerups = [];
 function rampAt(x, z) {
   for (const r of ramps) {
     if (Math.abs(z - r.zc) > r.reach) continue;
@@ -662,6 +670,10 @@ function spawnSegment(z0) {
     const u = srand(-19, 19); if (used.some(L => Math.abs(u - LANES[L]) < 6)) continue;
     if (rng() < 0.8) addRock(cx(oz) + u, oz, srand(0.8, 1.5), true); else addTree(cx(oz) + u, oz, srand(0.7, 1.1), true);
   }
+  if (segIndex > 4 && rng() < 0.18) {
+    const L = [0, 1, 2].find(l => !used.includes(l)) ?? 1, pz = z0 - srand(8, 40);
+    if (!nearDrop(-pz)) { const px = cx(pz) + LANES[L]; makePowerup(PU_KEYS[Math.floor(rng() * PU_KEYS.length)], px, baseH(px, pz) + 1.6, pz); }
+  }
   laneBlock = laneBlock.map(v => Math.max(0, v - 1));
 }
 function featureKicker(x, z0, size, a = 0) {
@@ -688,13 +700,63 @@ function cleanup(pz) {
   for (let i = orbs.length - 1; i >= 0; i--) if (orbs[i].z > lim) { killObj(orbs[i].mesh); orbs.splice(i, 1); }
   for (let i = pads.length - 1; i >= 0; i--) if (pads[i].z - pads[i].len > lim) { killObj(pads[i].mesh); pads.splice(i, 1); }
   for (let i = obstacles.length - 1; i >= 0; i--) if (obstacles[i].z > lim) obstacles.splice(i, 1);
+  for (let i = powerups.length - 1; i >= 0; i--) if (powerups[i].z > lim) { killObj(powerups[i].mesh); powerups.splice(i, 1); }
 }
 function clearCourse() {
-  for (const arr of [ramps, rails, hoops, orbs, pads]) { for (const o of arr) killObj(o.mesh); arr.length = 0; }
+  for (const arr of [ramps, rails, hoops, orbs, pads, powerups]) { for (const o of arr) killObj(o.mesh); arr.length = 0; }
   obstacles.length = 0;
   for (const [m, cap] of [[trees, TREE_CAP], [crystals, CRYS_CAP], [rocks, ROCK_CAP]]) { for (let i = 0; i < cap; i++) m.setMatrixAt(i, ZERO_M); m.instanceMatrix.needsUpdate = true; }
   treeCur = crysCur = rockCur = 0;
 }
+// ---------------------------------------------------------------- power-ups
+const PU = {
+  star:   { name: 'Invincibility',  dur: 9,  col: new THREE.Color(3.0, 2.3, 0.6), css: '#ffd36a', label: '★ INVINCIBLE', hint: 'smash right through anything' },
+  jet:    { name: 'Jetpack',        dur: 9,  col: new THREE.Color(3.0, 1.1, 0.35), css: '#ff9a4a', label: 'JETPACK', hint: 'hold JUMP to fly' },
+  boots:  { name: 'Gravity Boots',  dur: 10, col: new THREE.Color(0.6, 1.3, 3.4), css: '#7fb2ff', label: 'GRAVITY BOOTS', hint: 'stuck to the snow' },
+  thrust: { name: 'Mega Thrusters', dur: 6,  col: new THREE.Color(0.4, 2.6, 3.2), css: '#5ff2ff', label: 'MEGA THRUSTERS', hint: '400 km/h' },
+};
+const PU_KEYS = Object.keys(PU);
+let pu = null; // { type, t }
+const puOn = type => !!pu && pu.type === type;
+const puGeo = (() => {
+  const st = new THREE.Shape();
+  for (let i = 0; i < 10; i++) { const r = i % 2 ? 0.42 : 1, a = Math.PI / 2 + i * Math.PI / 5; i ? st.lineTo(Math.cos(a) * r, Math.sin(a) * r) : st.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
+  const star = new THREE.ExtrudeGeometry(st, { depth: 0.25, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.06, bevelSegments: 1 }).translate(0, 0, -0.125);
+  const jet = mergeGeometries([new THREE.CylinderGeometry(0.22, 0.22, 0.9, 12).translate(-0.27, 0, 0), new THREE.CylinderGeometry(0.22, 0.22, 0.9, 12).translate(0.27, 0, 0),
+    new THREE.ConeGeometry(0.2, 0.3, 12).rotateX(Math.PI).translate(-0.27, -0.6, 0), new THREE.ConeGeometry(0.2, 0.3, 12).rotateX(Math.PI).translate(0.27, -0.6, 0),
+    new THREE.SphereGeometry(0.22, 12, 8).translate(-0.27, 0.45, 0), new THREE.SphereGeometry(0.22, 12, 8).translate(0.27, 0.45, 0)]);
+  const boot = () => mergeGeometries([new THREE.BoxGeometry(0.34, 0.5, 0.34).translate(0, 0.25, 0), new THREE.BoxGeometry(0.36, 0.16, 0.62).translate(0, 0.08, 0.12)]);
+  const boots = mergeGeometries([boot().translate(-0.25, -0.25, 0), boot().translate(0.25, -0.25, 0)]);
+  const thrust = mergeGeometries([new THREE.CylinderGeometry(0.3, 0.3, 1.1, 14), new THREE.ConeGeometry(0.42, 0.5, 14).rotateX(Math.PI).translate(0, -0.75, 0), new THREE.ConeGeometry(0.3, 0.45, 14).translate(0, 0.78, 0)]).rotateZ(Math.PI / 2);
+  for (const g of [star, jet, boots, thrust]) g.userData.shared = true;
+  return { star, jet, boots, thrust, ring: sharedGeo(new THREE.TorusGeometry(1.45, 0.05, 8, 48)) };
+})();
+const puMats = {}; for (const k of PU_KEYS) puMats[k] = new THREE.MeshBasicMaterial({ color: PU[k].col });
+function makePowerup(type, x, y, z) {
+  const grp = new THREE.Group(); grp.position.set(x, y, z);
+  const model = new THREE.Mesh(puGeo[type], puMats[type]); grp.add(model);
+  const ring = new THREE.Mesh(puGeo.ring, puMats[type]); grp.add(ring);
+  scene.add(grp);
+  powerups.push({ type, x, y, z, mesh: grp, model, ring, taken: false, ph: rand(0, TAU) });
+}
+function activatePowerup(type) {
+  const prev = pu && pu.type;
+  pu = { type, t: PU[type].dur };
+  popup(PU[type].label + ' — ' + PU[type].hint, 'tier', PU[type].css);
+  arpeggio(); rumble(0.4, 0.8, 300);
+  if (type === 'jet' && P.grounded && P.state === 'ride') { P.vy += 6; leaveGround(true); }
+  syncPowerupHud(true);
+  if (prev && prev !== type) popup(PU[prev].name + ' replaced', 'lost');
+}
+function endPowerup() { if (!pu) return; popup(PU[pu.type].name + ' wore off', 'minor'); pu = null; syncPowerupHud(true); }
+function syncPowerupHud(force) {
+  const el = $('pu');
+  if (!pu) { el.classList.remove('on'); return; }
+  el.classList.add('on');
+  if (force) { $('puName').textContent = PU[pu.type].label; el.style.setProperty('--puc', PU[pu.type].css); }
+  $('puFill').style.width = clamp(pu.t / PU[pu.type].dur, 0, 1) * 100 + '%';
+}
+
 // ---------------------------------------------------------------- finish gate
 const finishZ = -(RAMP_S - 30);
 const finish = new THREE.Group();
@@ -784,6 +846,8 @@ function updateParticles(dt) {
 }
 const PAL_SNOW = new Float32Array([0.26, 0.25, 0.34, 0.19, 0.18, 0.27, 0.06, 0.05, 0.11]);
 const PAL_GOLD = new Float32Array([3, 2.4, 1.2, 2.2, 1.2, 0.3, 0.6, 0.15, 0.8]);
+const PAL_JET = new Float32Array([1.4, 0.9, 0.35, 1.0, 0.35, 0.08, 0.25, 0.05, 0.02]);
+const PAL_THR = new Float32Array([0.7, 1.2, 1.4, 0.2, 0.7, 1.0, 0.03, 0.1, 0.25]);
 const PAL_CRASH = new Float32Array([1.0, 0.5, 1.2, 0.5, 0.15, 0.8, 0.1, 0.02, 0.2]);
 const firePal = new Float32Array(TIERS[0].pal);
 const boostPal = new Float32Array(9);
@@ -856,6 +920,15 @@ function makeRider() {
 const R = makeRider();
 // put the board parts in their own group so a grab can pull the board up to the hands
 R.boardG = new THREE.Group(); R.lean.add(R.boardG);
+// power-up gear worn by the rider (rider faces +x, so the back is -x; travel is -z)
+R.jet = new THREE.Mesh(puGeo.jet, new THREE.MeshStandardMaterial({ color: 0xc0c4d0, metalness: 0.8, roughness: 0.3, emissive: 0x442200 }));
+R.jet.position.set(-0.36, 1.18, 0); R.jet.scale.setScalar(0.7); R.jet.rotation.y = Math.PI / 2; R.jet.visible = false; R.body.add(R.jet);
+R.boots = new THREE.Group();
+for (const z of [-0.27, 0.27]) { const b = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.3, 0.3), puMats.boots); b.position.set(0, 0.24, z); R.boots.add(b); }
+R.boots.visible = false; R.body.add(R.boots);
+R.thr = new THREE.Group();
+for (const y of [0.85, 1.35]) { const t = new THREE.Mesh(puGeo.thrust, new THREE.MeshStandardMaterial({ color: 0x9fe8ff, metalness: 0.7, roughness: 0.3, emissive: 0x0a3344 })); t.scale.setScalar(0.55); t.rotation.y = Math.PI / 2; t.position.set(-0.45, y, 0.35); R.thr.add(t); }
+R.thr.visible = false; R.body.add(R.thr);
 for (const c of [...R.lean.children]) if (c !== R.body && c !== R.boardG) R.boardG.add(c);
 
 // ---------------------------------------------------------------- state
@@ -1206,6 +1279,7 @@ function land(h) {
     P.vx *= ns / spL; P.vz *= ns / spL;
   }
   if (P.airTime < 0.35) { P.flip = fw; P.spin = sw; }
+  else if (puOn('star')) { P.flip = fw; P.spin = sw; }
   else if (Math.abs(fw) > 0.85 || Math.abs(sw) > 0.8) { crash(Math.abs(fw) > 0.85 ? 'Over-rotated!' : 'Caught an edge!'); return; }
   const r = trickResult(), air = P.airTime;
   if (r.comps > 0) {
@@ -1220,6 +1294,7 @@ function land(h) {
   if (air > 0.5) { burst(P.x, P.y + 0.2, P.z, 30, PAL_SNOW, 6, 0.7, -8, 0.8); shake = Math.max(shake, Math.min(0.6, air * 0.2)); noise(0.25, 500, 1, 0.14); rumble(Math.min(0.8, air * 0.3), 0.3, 140); }
 }
 function crash(reason) {
+  if (puOn('star') && P.state === 'ride') return; // invincible
   if (P.state === 'crash') return;
   P.state = 'crash'; P.crashT = 1.5; P.grind = null; P.tumble = 0; stats.crashes++;
   if (!infiniteLives) lives = Math.max(0, lives - 1);
@@ -1248,7 +1323,7 @@ function updateCrash(dt) {
 }
 function startGrind(r) {
   const fw = wrapPI(P.flip);
-  if (Math.abs(fw) > 1.1) { crash('Slipped off the rail!'); return; }
+  if (Math.abs(fw) > 1.1 && !puOn('star')) { crash('Slipped off the rail!'); return; }
   const tr = trickResult();
   if (tr.comps > 0) event(tr.pts + P.airTime * 60, tr.name + ' to Rail', true);
   if (tr.half % 2 === 1) P.switch = !P.switch;
@@ -1290,7 +1365,7 @@ function updateRide(dt, steerIn, up, down) {
     P.tight = tightDir !== 0 || ((key('tight') || key('indy')) && steerIn !== 0);
     const steerT = tightDir !== 0 ? tightDir : steerIn;
     P.steer = lerp(P.steer, steerT, ease(P.tight ? 14 : 10, dt));
-    P.heading += P.steer * (P.tight ? 4.8 : 2.3) * dt;
+    P.heading += P.steer * (P.tight ? 4.8 : 2.3) * (puOn('boots') ? 1.25 : 1) * dt;
     const gx = baseH(P.x + 0.5, P.z) - baseH(P.x - 0.5, P.z);
     P.heading -= gx * 1.5 * dt;
     if (steerT === 0) P.heading = lerp(P.heading, trackHeading(P.z - 12), ease(0.55, dt));
@@ -1304,14 +1379,16 @@ function updateRide(dt, steerIn, up, down) {
     } else {
       const hx = Math.sin(P.heading), hz = -Math.cos(P.heading);
       const gradeAlong = clamp(baseH(P.x, P.z) - baseH(P.x + hx, P.z + hz), -1.5, 2.0);
-      const acc = G * gradeAlong * 1.05 + (boostT > 0 ? 30 : 0) + (up ? 3 : 0);
-      const drag = (up ? 0.00108 : 0.0018) * sp * sp * (boostT > 0 ? 0.35 : 1);
+      const acc = G * gradeAlong * 1.05 + (boostT > 0 ? 30 : 0) + (puOn('thrust') ? 60 : 0) + (up ? 3 : 0);
+      const drag = (up ? 0.00108 : 0.0018) * sp * sp * (puOn('thrust') ? 0.15 : boostT > 0 ? 0.35 : 1);
       const fric = (down || finished ? 18 : 0.8) + Math.abs(P.steer) * sp * (P.tight ? 0.1 : 0.06);
+      const cap = capNow(), before = sp;
       sp = Math.max(finished ? 0 : 7, sp + (acc - drag - fric) * dt);
-      const cap = capNow(); if (sp > cap) sp = Math.max(cap, sp - (boostT > 0 ? 30 : 14) * dt);
+      // never pushed above the limit; if already above it (boost/thrusters ended), ease down
+      if (sp > cap) sp = Math.max(cap, Math.min(sp, before) - ((boostT > 0 ? 30 : 14) + (sp - cap) * 0.5) * dt);
     }
     P.onRamp = onRamp;
-    const dx = Math.sin(P.heading), dz = -Math.cos(P.heading), grip = ease(onRamp ? 24 : P.tight ? 16 : 9, dt);
+    const dx = Math.sin(P.heading), dz = -Math.cos(P.heading), grip = ease(onRamp ? 24 : P.tight || puOn('boots') ? 16 : 9, dt);
     const nvx = P.vx + (dx * sp - P.vx) * grip, nvz = P.vz + (dz * sp - P.vz) * grip, nm = Math.hypot(nvx, nvz) || 1;
     P.vx = nvx / nm * sp; P.vz = nvz / nm * sp;
     P.spin *= Math.exp(-12 * dt); P.flip *= Math.exp(-12 * dt);
@@ -1320,7 +1397,12 @@ function updateRide(dt, steerIn, up, down) {
     // tricks only kick in once you're properly airborne, so holding tuck/carve through little hops is safe
     // real jumps (ollie, ramp, rail pop, drop) allow tricks instantly; tiny bump-hops wait a moment
     const airborne = P.airIntent || P.airTime > 0.18 || P.y - groundH(P.x, P.z) > 1.0;
-    P.spinVel = lerp(P.spinVel, airborne ? -steerIn * 7.4 : 0, ease(10, dt)); P.spin += P.spinVel * dt;
+    const jet = puOn('jet');
+    P.spinVel = lerp(P.spinVel, airborne && !jet ? -steerIn * 7.4 : 0, ease(10, dt)); P.spin += P.spinVel * dt;
+    if (jet && steerIn) { // jetpack: steering turns your flight path instead of spinning
+      const a = steerIn * 1.4 * dt, c = Math.cos(a), sn = Math.sin(a), vx = P.vx, vz = P.vz;
+      P.vx = vx * c - vz * sn; P.vz = vx * sn + vz * c; P.heading += a;
+    }
     const flipIn = airborne ? (up ? 1 : 0) - (down ? 1 : 0) : 0;
     P.flipVel = lerp(P.flipVel, flipIn * 8.2, ease(12, dt)); P.flip += P.flipVel * dt;
     if (!steerIn && Math.abs(P.spinVel) < 1.5) P.spin -= wrapHalf(P.spin) * Math.min(1, 4 * dt);
@@ -1331,7 +1413,7 @@ function updateRide(dt, steerIn, up, down) {
   }
 
   let jumped = false;
-  if (P.grounded && pressed('jump')) { P.vy += OLLIE; leaveGround(true); jumped = true; noise(0.15, 1800, 1, 0.12, 'highpass'); }
+  if (P.grounded && (pressed('jump') || (puOn('jet') && key('jump'))) && !puOn('boots')) { P.vy += OLLIE; leaveGround(true); jumped = true; noise(0.15, 1800, 1, 0.12, 'highpass'); }
 
   const hOld = groundH(P.x, P.z);
   P.x += P.vx * dt; P.z += P.vz * dt;
@@ -1342,7 +1424,7 @@ function updateRide(dt, steerIn, up, down) {
     const step = hNew - hOld;
     if (step > 2.0) { crash('Hit the ramp side!'); P.y = hNew; return; }
     const gvy = clamp(step / Math.max(dt, 1e-4), -60, 14);
-    if (P.vy - gvy > G * dt * 1.6) {
+    if (P.vy - gvy > G * dt * 1.6 && (!puOn('boots') || P.onRamp)) {
       const lr = P.onRamp ? P.lastRamp : null, spL = Math.hypot(P.vx, P.vz);
       if (lr && lr.hoop) {
         const D = Math.hypot(lr.hoop.x - P.x, lr.hoop.z - P.z), t = D / spL;
@@ -1351,7 +1433,17 @@ function updateRide(dt, steerIn, up, down) {
       leaveGround(P.onRamp || P.vy - gvy > G * dt * 4); P.vy -= G * dt; P.y += P.vy * dt; }
     else { P.y = hNew; P.vy = gvy; }
   } else {
-    P.vy -= G * dt; P.y += P.vy * dt;
+    let g = G;
+    if (puOn('jet')) {
+      g = G * 0.5;
+      // thrust toward a ceiling ~28 m above the snow, accounting for the slope dropping away beneath you
+      const hgt = P.y - hNew, gv = (baseH(P.x + P.vx * 0.1, P.z + P.vz * 0.1) - hNew) / 0.1;
+      const vyCap = gv + clamp((28 - hgt) * 1.5, -8, 14);
+      P.jetting = key('jump') && P.vy < vyCap;
+      if (P.jetting) P.vy = Math.min(P.vy + 44 * dt, vyCap);
+    } else P.jetting = false;
+    if (puOn('boots')) g = G * 2.6;
+    P.vy -= g * dt; P.y += P.vy * dt;
     if (jumped) P.y = Math.max(P.y, hNew + 0.02);
     if (!tryGrind() && P.y <= hNew) land(hNew);
   }
@@ -1371,6 +1463,10 @@ function checkObjects(prevX, prevZ) {
         tone(880, 0.8, 'sine', 0.08, 0.05);
       }
     }
+  }
+  for (const q of powerups) {
+    if (q.taken || Math.abs(q.z - P.z) > 4) continue;
+    if (Math.hypot(q.x - P.x, q.y - cy, q.z - P.z) < 2.6) { q.taken = true; q.mesh.visible = false; burst(q.x, q.y, q.z, 70, PAL_GOLD, 8, 0.8, 2); activatePowerup(q.type); }
   }
   for (const o of orbs) {
     if (o.taken || Math.abs(o.z - P.z) > 3) continue;
@@ -1400,7 +1496,7 @@ function checkObjects(prevX, prevZ) {
     const tt = L2 > 0 ? clamp(((o.x - prevX) * sx + (o.z - prevZ) * sz) / L2, 0, 1) : 1;
     const cxp = prevX + sx * tt, czp = prevZ + sz * tt;
     if (Math.hypot(cxp - o.x, czp - o.z) < o.r + 0.45 && P.y < o.top) {
-      if (boostT > 0) {
+      if (boostT > 0 || puOn('star')) {
         o.dead = true; o.mesh.setMatrixAt(o.idx, ZERO_M); o.mesh.instanceMatrix.needsUpdate = true;
         event(250, { tree: 'Tree Transmuted', rock: 'Stone Transmuted', crystal: 'Crystal Transmuted' }[o.kind], true);
         burst(o.x, P.y + 2, o.z, 120, boostPal, 11, 1.2, 4); noise(0.4, 1200, 1, 0.25);
@@ -1452,7 +1548,9 @@ function updateRiderVisual(dt, steerIn, up) {
   R.halo.rotation.z += dt * 2;
   const auraT = 0.2 + (chainCount > 0 ? ti * 0.08 : 0) + (boostT > 0 ? 0.3 : 0);
   R.auraMat.uniforms.uPower.value = lerp(R.auraMat.uniforms.uPower.value, auraT, ease(4, dt));
-  R.auraMat.uniforms.uColor.value.setRGB(firePal[3] * 1.4, firePal[4] * 1.4, firePal[5] * 1.4);
+  if (puOn('star')) { hsl.setHSL((time * 0.8) % 1, 1, 0.6); R.auraMat.uniforms.uColor.value.setRGB(hsl.r * 1.6, hsl.g * 1.6, hsl.b * 1.6); R.auraMat.uniforms.uPower.value = 0.75; }
+  else R.auraMat.uniforms.uColor.value.setRGB(firePal[3] * 1.4, firePal[4] * 1.4, firePal[5] * 1.4);
+  R.jet.visible = puOn('jet'); R.boots.visible = puOn('boots'); R.thr.visible = puOn('thrust');
   R.auraMat.uniforms.uTime.value = time;
   R.root.visible = !(P.invuln > 0 && Math.floor(time * 14) % 2 === 0);
 }
@@ -1487,6 +1585,16 @@ function emitFire(dt) {
     const lm = R.lean.matrixWorld, an = Math.min(8, (rate * 0.05 * dt) + Math.random()) | 0;
     for (let i = 0; i < an; i++) { const aa = rand(0, TAU); tmpV.set(Math.cos(aa) * 0.6, rand(0.3, 2.0), Math.sin(aa) * 0.6).applyMatrix4(lm); emit(tmpV.x, tmpV.y, tmpV.z, rand(-0.5, 0.5) - P.vx * 0.04, rand(1, 2.5), rand(-0.5, 0.5) - P.vz * 0.04, rand(0.3, 0.6), sizeK * 0.35 * rand(0.6, 1.2), firePal, 5); }
   }
+  // power-up exhaust
+  if (puOn('jet') && P.jetting) {
+    R.jet.updateMatrixWorld(true);
+    for (let i = 0; i < 8; i++) { tmpV.set(i % 2 ? 0.27 : -0.27, -0.75, 0).applyMatrix4(R.jet.matrixWorld); emit(tmpV.x, tmpV.y, tmpV.z, rand(-1, 1) - P.vx * 0.1, rand(-12, -7), rand(-1, 1) - P.vz * 0.1, rand(0.25, 0.45), rand(0.3, 0.55), PAL_JET, -2, 1.5); }
+  }
+  if (puOn('thrust')) {
+    const s2 = Math.hypot(P.vx, P.vz) || 1;
+    for (const t of R.thr.children) { t.updateMatrixWorld(true); for (let i = 0; i < 4; i++) { tmpV.set(0, -0.95, 0).applyMatrix4(t.matrixWorld); emit(tmpV.x, tmpV.y, tmpV.z, -P.vx / s2 * 14 + rand(-1, 1), rand(-0.5, 0.8), -P.vz / s2 * 14 + rand(-1, 1), rand(0.2, 0.4), rand(0.3, 0.5), PAL_THR, 0, 1); } }
+  }
+  if (puOn('star') && Math.random() < 0.6) { hsl.setHSL(Math.random(), 1, 0.6); const sp2 = new Float32Array([hsl.r, hsl.g, hsl.b, hsl.r * 0.8, hsl.g * 0.8, hsl.b * 0.8, 0.2, 0.1, 0.3]); const a2 = rand(0, TAU); emit(P.x + Math.cos(a2) * 0.9, P.y + rand(0.3, 2), P.z + Math.sin(a2) * 0.9, 0, rand(0.5, 2), 0, rand(0.3, 0.6), rand(0.15, 0.3), sp2, 1); }
   // grind sparks
   if (P.grind) {
     for (let i = 0; i < 6; i++) emit(P.x + rand(-0.3, 0.3), P.y + 0.05, P.z, rand(-6, 6), rand(1, 6), rand(-2, 6), rand(0.3, 0.6), rand(0.25, 0.5), PAL_GOLD, -16, 0.6);
@@ -1544,6 +1652,7 @@ function updateWorld(dt) {
     h.spin.rotation.z += dt * (h.big ? 1.2 : 0.8);
     if (h.passed && h.fade < 1) { h.fade = Math.min(1, h.fade + dt * 1.2); h.mesh.scale.setScalar(1 + h.fade * 0.7); h.mats[0].opacity = h.mats[1].opacity = 1 - h.fade; if (h.fade >= 1) h.mesh.visible = false; }
   }
+  for (const q of powerups) if (!q.taken) { q.model.rotation.y += dt * 2.2; q.ring.rotation.x = time * 1.3; q.ring.rotation.y = time * 0.9; q.mesh.position.y = q.y + Math.sin(time * 2.5 + q.ph) * 0.25; }
   for (const o of orbs) if (!o.taken) { o.mesh.rotation.y += dt * 3; o.mesh.position.y = o.y + Math.sin(time * 3 + o.ph) * 0.15; }
   moon.position.set(P.x - 60, P.y + 90, P.z + 40); moon.target.position.set(P.x, P.y, P.z - 30);
   sky.position.copy(camera.position);
@@ -1644,7 +1753,7 @@ function showResults(kind) {
   $('results').classList.remove('hidden'); mode = 'results';
 }
 function resetRun() {
-  clearCourse(); lives = MAX_LIVES; celestialFrozen = false; asc = null; R.root.visible = true;
+  clearCourse(); pu = null; syncPowerupHud(true); lives = MAX_LIVES; celestialFrozen = false; asc = null; R.root.visible = true;
   $('win').classList.remove('show'); $('whiteout').style.opacity = 0; rng = mulberry32(SEED); sections.forEach(q => q.told = false);
   nextSeg = -40; segIndex = 0; laneBlock = [0, 0, 0]; terrCZ = null;
   Object.assign(P, freshP()); P.y = baseH(0, 0);
@@ -1708,6 +1817,7 @@ function update(dt) {
   else meter = 100; // full: hold until the boost is used
   if (meter >= 99.9 && boostT <= 0 && !meterFullShown) { meterFullShown = true; tone(587, 0.5, 'sine', 0.08); tone(880, 0.7, 'sine', 0.06, 0.12); rumble(0.2, 0.5, 200); }
   if (P.invuln > 0) P.invuln -= dt;
+  if (pu && mode === 'play') { pu.t -= dt; if (pu.t <= 0) endPowerup(); else syncPowerupHud(false); }
   if (P.state === 'ascend' || P.state === 'won' || P.state === 'out') { if (P.state === 'ascend') updateAscend(dt); updateRiderVisual(dt, 0, false); if (P.state === 'ascend') emitFire(dt); return; }
 
   const prevZ = P.z, prevX = P.x;

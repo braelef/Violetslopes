@@ -33,6 +33,11 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 
 - **Combos.** Tricks, hoops and grinds raise the multiplier. The fire trail changes through five tiers: Violet Spark, Violet Flame, Amethyst Blaze, Transmutation and Ascension. Your combo banks into your score once you've been on the snow for 3 full seconds in a row. Scoring on the ground doesn't reset that count; only a real jump, a grind or a crash does.
 - **Violet Flame boost.** Combo moves fill the meter. When it is full, it stays full until you use it, and while it waits the meter glows and a button prompt flashes. The boost gives 7 seconds of extra speed (up to 90 km/h over the stage limit) and double points, and you burn through trees instead of crashing into them.
+- **Power-ups.** These float above the run about every 300 m from the end of stage 1 onward. Ride through one to collect it; a new one replaces the current one, and a bar shows the time left:
+  - ★ **Star** (9 s): invincibility. Obstacles shatter for points, and bad landings or rail slips don't count.
+  - 🚀 **Jetpack** (9 s): hold Jump to fly, up to about 28 m above the snow. Gravity is lighter and steering turns your flight path.
+  - 🥾 **Gravity Boots** (10 s): you stick to the snow. Drops, rollers and bumps can't throw you, grip is stronger, and ollies are off. Ramps still launch you.
+  - 🔥 **Mega Thrusters** (6 s): rocket to 400 km/h, then ease back down to the stage limit.
 - **The course.** It is the same fixed, seeded course every run. It curves more, gets steeper and fills with more obstacles as you descend. Along the way are steep walls ("Amethyst Wall"), cliff drops ("Leap of Faith") and rollers. Top speed rises stage by stage: 120, 165, 210, 255, then 300 km/h in the final stage. The Violet Flame boost breaks the limit by up to 90 km/h, then eases back down when it ends.
 - **Lives.** You have five. Every wipeout costs one, and at zero you start over. Switch to infinite lives with the ✦ Lives button on the start or pause screen (no lives bonus at the finish).
 - **The ending.** The run funnels into a giant ramp that launches you into the violet sun, and **YOU WIN**.
