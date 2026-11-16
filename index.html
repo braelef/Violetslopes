@@ -138,11 +138,11 @@
       <div><kbd>A</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>→</kbd> carve · spin in air</div>
       <div><kbd>SPACE</kbd> ollie · pop off rails</div>
       <div><kbd>W</kbd> / <kbd>↑</kbd> tuck · frontflip in air</div>
-      <div><kbd>S</kbd> / <kbd>↓</kbd> brake · backflip in air</div>
+      <div><kbd>S</kbd> / <kbd>↓</kbd> <b>brake</b> (on the ground) · backflip in air</div>
       <div><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> / <kbd>SHIFT</kbd> grabs</div>
       <div><kbd>F</kbd> invoke the Violet Flame (when full)</div>
-      <div><kbd>P</kbd> pause · <kbd>M</kbd> mute · <kbd>N</kbd> music</div>
-      <div>🎮 Stick/D-pad steer · <kbd>A</kbd> jump · <kbd>X</kbd><kbd>B</kbd><kbd>LB</kbd><kbd>RB</kbd> grabs · <kbd>Y</kbd> flame · <kbd>Start</kbd> pause</div>
+      <div><kbd>P</kbd> pause (<kbd>R</kbd> start over) · <kbd>M</kbd> mute · <kbd>N</kbd> music</div>
+      <div>🎮 Stick/D-pad steer · <kbd>A</kbd> jump · <kbd>X</kbd><kbd>B</kbd><kbd>LB</kbd><kbd>RB</kbd> grabs · <kbd>Y</kbd> flame · <kbd>LT</kbd> brake · <kbd>Start</kbd> pause</div>
       <div>Chain tricks, hoops &amp; grinds to raise the flame</div>
     </div>
     <div class="tiers" id="tierLegend"></div>
@@ -163,7 +163,11 @@
 <div class="overlay hidden" id="pause">
   <div class="panel">
     <h1 style="font-size:64px">PAUSED</h1>
-    <button class="go" id="resumeBtn">RESUME</button>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <button class="go" id="resumeBtn">RESUME</button>
+      <button class="go" id="restartBtn" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">START OVER</button>
+    </div>
+    <div class="note">Controller: Start to resume · Back/Select to start over</div>
   </div>
 </div>
 <div id="err"></div>
@@ -819,6 +823,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Enter' && mode === 'menu') { startGame(); return; }
   if (e.code === 'Enter' && mode === 'results') { rideAgain(); return; }
   if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
+  if (e.code === 'KeyR' && mode === 'paused') { restartFromPause(); return; }
   if (e.code === 'KeyM') { toggleMute(); return; }
   if (e.code === 'KeyN') { toggleMusic(); return; }
   const k = MAP[e.code]; if (!k) return;
@@ -846,7 +851,7 @@ function pollPad() {
   if (ay > 0.45) padKeys.down = true;
   // Start = start / pause, Back/Select = music
   if (b[9] && !padPrev[9]) { if (mode === 'menu') startGame(); else if (mode !== 'results') togglePause(); }
-  if (b[8] && !padPrev[8]) toggleMusic();
+  if (b[8] && !padPrev[8]) { if (mode === 'paused') restartFromPause(); else toggleMusic(); }
   if (mode === 'menu' && b[0] && !padPrev[0]) startGame();
   if (mode === 'results' && (b[0] || b[9]) && !(padPrev[0] || padPrev[9])) rideAgain();
   padPrev = b;
@@ -1535,6 +1540,15 @@ function rideAgain() {
   popup('Descend', 'tier', '#e7c6ff');
 }
 $('againBtn').addEventListener('click', rideAgain);
+function restartFromPause() {
+  if (mode !== 'paused') return;
+  $('pause').classList.add('hidden');
+  if (actx) actx.resume();
+  resetRun(); mode = 'play'; startZ = P.z;
+  restartMusic();
+  popup('Descend', 'tier', '#e7c6ff');
+}
+$('restartBtn').addEventListener('click', restartFromPause);
 
 // ---------------------------------------------------------------- main update
 function update(dt) {
@@ -1548,7 +1562,8 @@ function update(dt) {
     meterFullShown = false;
   }
   if (boostT > 0) { boostT -= dt; meter = Math.max(0, meter - 100 / BOOST_DUR * dt); if (boostT <= 0) { boostT = 0; popup('The flame settles', 'minor'); } }
-  else meter = Math.max(0, meter - 1.1 * dt);
+  else if (meter < 99.9) meter = Math.max(0, meter - 1.1 * dt);
+  else meter = 100; // full: hold until the boost is used
   if (meter >= 99.9 && boostT <= 0 && !meterFullShown) { meterFullShown = true; tone(587, 0.5, 'sine', 0.08); tone(880, 0.7, 'sine', 0.06, 0.12); rumble(0.2, 0.5, 200); }
   if (P.invuln > 0) P.invuln -= dt;
   if (P.state === 'ascend' || P.state === 'won' || P.state === 'out') { if (P.state === 'ascend') updateAscend(dt); updateRiderVisual(dt, 0, false); if (P.state === 'ascend') emitFire(dt); return; }

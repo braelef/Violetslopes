@@ -19,17 +19,17 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 | --- | --- | --- |
 | Carve / spin in air | A D or ← → | Left stick / D-pad |
 | Tuck / frontflip in air | W or ↑ | Stick up / RT |
-| Brake / backflip in air | S or ↓ | Stick down / LT |
+| **Brake** (on the ground) / backflip in air | S or ↓ | Stick down / LT |
 | Ollie, pop off rails | Space | A |
 | Grabs (Indy, Melon, Method) | J K L / Shift | X, B, LB, RB |
 | Violet Flame boost (meter full) | F | Y |
-| Pause | P / Esc | Start |
+| Pause · start over (while paused) | P / Esc · R | Start · Back/Select |
 | Music on/off · mute all | N · M | Back/Select |
 
 ## How it plays
 
 - **Combos.** Tricks, hoops and grinds raise the multiplier. The fire trail changes through five tiers: Violet Spark, Violet Flame, Amethyst Blaze, Transmutation and Ascension. Points bank after 3 seconds without a new combo move.
-- **Violet Flame boost.** Combo moves fill the meter. When it is full, the meter glows and a button prompt flashes. The boost gives 7 seconds of extra speed and double points, and you burn through trees instead of crashing into them.
+- **Violet Flame boost.** Combo moves fill the meter. When it is full, it stays full until you use it, and while it waits the meter glows and a button prompt flashes. The boost gives 7 seconds of extra speed and double points, and you burn through trees instead of crashing into them.
 - **The course.** It is the same fixed, seeded course every run. It curves more, gets steeper and fills with more obstacles as you descend. Along the way are steep walls ("Amethyst Wall"), cliff drops ("Leap of Faith") and rollers. Top speed is about 300 km/h in a tuck.
 - **Lives.** You have five. Every wipeout costs one, and at zero you start over.
 - **The ending.** The run funnels into a giant ramp that launches you into the violet sun, and **YOU WIN**.
