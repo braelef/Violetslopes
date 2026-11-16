@@ -108,6 +108,7 @@
   .overlay .sndRow{justify-content:center}
   .sndBtn{pointer-events:auto;font-family:'Outfit';font-weight:700;font-size:12px;letter-spacing:.06em;color:#fff;background:rgba(120,50,220,.25);border:1px solid rgba(220,170,255,.45);border-radius:18px;padding:5px 10px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
   .sndBtn i{font-style:normal}
+  .sndBtn.inf{background:linear-gradient(135deg,#6a12d8,#c040ff);border-color:#ffe2a0}
   .sndBtn:hover{background:rgba(160,80,255,.45)}
   .sndBtn.off{opacity:.55;background:rgba(60,30,90,.35);text-decoration:line-through}
   .sndBtn kbd{min-width:0;padding:1px 6px;font-size:10px;text-decoration:none}
@@ -154,6 +155,7 @@
   <div class="tb" data-k="right" style="left:100px;bottom:40px">▶</div>
   <div class="tb" data-k="up" style="left:59px;bottom:118px">▲</div>
   <div class="tb" data-k="down" style="left:182px;bottom:40px">▼</div>
+  <div class="tb" data-k="tight" style="left:141px;bottom:118px;font-size:11px">TIGHT</div>
   <div class="tb" data-k="jump" style="right:18px;bottom:40px;width:86px;height:86px">JUMP</div>
   <div class="tb" data-k="indy" style="right:118px;bottom:30px">GRAB</div>
   <div class="tb" data-k="boost" style="right:40px;bottom:136px">FLAME</div>
@@ -166,10 +168,11 @@
     <div class="ctl">
       <div class="ctl-h"><span></span><span>Keyboard</span><span>🎮 Controller</span></div>
       <div class="ctl-r"><span class="act">Carve<small>spin in the air</small></span><span class="keys"><kbd>A</kbd><kbd>D</kbd><kbd>←</kbd><kbd>→</kbd></span><span class="keys">Left stick · D-pad</span></div>
+      <div class="ctl-r"><span class="act">Tight carve<small>sharp turn, sheds speed</small></span><span class="keys"><kbd>Q</kbd><kbd>E</kbd> · <kbd>Shift</kbd>+<kbd>A</kbd>/<kbd>D</kbd></span><span class="keys"><kbd>LB</kbd><kbd>RB</kbd> on the ground</span></div>
       <div class="ctl-r"><span class="act">Tuck<small>frontflip in the air</small></span><span class="keys"><kbd>W</kbd><kbd>↑</kbd></span><span class="keys">Stick up · <kbd>RT</kbd></span></div>
       <div class="ctl-r"><span class="act">Brake<small>backflip in the air</small></span><span class="keys"><kbd>S</kbd><kbd>↓</kbd></span><span class="keys">Stick down · <kbd>LT</kbd></span></div>
       <div class="ctl-r"><span class="act">Ollie<small>pop off a rail</small></span><span class="keys"><kbd>Space</kbd></span><span class="keys"><kbd>A</kbd></span></div>
-      <div class="ctl-r"><span class="act">Grab<small>hold in the air</small></span><span class="keys"><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd><kbd>Shift</kbd></span><span class="keys"><kbd>X</kbd><kbd>B</kbd><kbd>LB</kbd><kbd>RB</kbd></span></div>
+      <div class="ctl-r"><span class="act">Grab<small>hold in the air</small></span><span class="keys"><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd><kbd>Shift</kbd></span><span class="keys"><kbd>X</kbd> Indy · <kbd>B</kbd> Melon · <kbd>LB</kbd><kbd>RB</kbd></span></div>
       <div class="ctl-r"><span class="act">Violet Flame boost<small>when the meter is full</small></span><span class="keys"><kbd>F</kbd></span><span class="keys"><kbd>Y</kbd></span></div>
       <div class="ctl-r"><span class="act">Pause<small>then R to start over</small></span><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span class="keys"><kbd>Start</kbd></span></div>
       <div class="ctl-r"><span class="act">Camera<small>4 views</small></span><span class="keys"><kbd>C</kbd> or 🎥 button</span><span class="keys"><kbd>R3</kbd> stick click</span></div>
@@ -178,7 +181,7 @@
     <div class="tip">Chain tricks, hoops &amp; grinds to change the colour of your flame</div>
     <div class="tiers" id="tierLegend"></div>
     <button class="go" id="startBtn">BEGIN DESCENT</button>
-    <div style="margin-top:14px"><div class="sndRow"><button class="sndBtn btnMusic"><i>🎵</i> Music <kbd>N</kbd></button><button class="sndBtn btnSfx"><i>🔊</i> Sound FX <kbd>M</kbd></button></div></div>
+    <div style="margin-top:14px"><div class="sndRow"><button class="sndBtn btnMusic"><i>🎵</i> Music <kbd>N</kbd></button><button class="sndBtn btnSfx"><i>🔊</i> Sound FX <kbd>M</kbd></button><button class="sndBtn btnLives"><i>✦</i> <span>Lives: 5</span></button></div></div>
     <div class="credit">Music: <i>The Blue Danube</i>, Op. 314 (Johann Strauss II) — Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 2024. Recording courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</div>
   </div>
 </div>
@@ -198,7 +201,7 @@
       <button class="go" id="resumeBtn">RESUME</button>
       <button class="go" id="restartBtn" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">START OVER</button>
     </div>
-    <div style="margin-top:18px"><div class="sndRow"><button class="sndBtn btnMusic"><i>🎵</i> Music <kbd>N</kbd></button><button class="sndBtn btnSfx"><i>🔊</i> Sound FX <kbd>M</kbd></button></div></div>
+    <div style="margin-top:18px"><div class="sndRow"><button class="sndBtn btnMusic"><i>🎵</i> Music <kbd>N</kbd></button><button class="sndBtn btnSfx"><i>🔊</i> Sound FX <kbd>M</kbd></button><button class="sndBtn btnLives"><i>✦</i> <span>Lives: 5</span></button></div></div>
     <div class="note">Controller: Start to resume · Back/Select to start over</div>
   </div>
 </div>
@@ -843,12 +846,16 @@ function makeRider() {
   return { root, tilt, flipG, lean, body, board, armF, armB, legF, legB, halo, scarf, aura, auraMat };
 }
 const R = makeRider();
+// put the board parts in their own group so a grab can pull the board up to the hands
+R.boardG = new THREE.Group(); R.lean.add(R.boardG);
+for (const c of [...R.lean.children]) if (c !== R.body && c !== R.boardG) R.boardG.add(c);
 
 // ---------------------------------------------------------------- state
 const freshP = () => ({ x: 0, y: 0, z: 0, vx: 0, vy: -14 * SLOPE, vz: -14, heading: 0, grounded: true, airTime: 0, spin: 0, flip: 0, spinVel: 0, flipVel: 0, grab: null, grabTime: 0, grabUsed: null, state: 'ride', crashT: 0, invuln: 0, switch: false, grind: null, grindT: 0, steer: 0, onRamp: false, tilt: 0, roll: 0, tumble: 0, grindOff: 0, startSwitch: false });
 const P = freshP();
 P.y = baseH(0, 0);
 const MAX_LIVES = 5;
+let infiniteLives = false; try { infiniteLives = localStorage.getItem('violetSlopesInfinite') === '1'; } catch (e) {}
 let lives = MAX_LIVES, shownLives = -1, celestialFrozen = false, asc = null;
 let runTime = 0, finished = false, stageIdx = -1, finishBonus = 0, stats = { tricks: 0, crashes: 0, bestCombo: 0 }, bestTime = 0;
 try { bestTime = +localStorage.getItem('violetSlopesBestTime') || 0; } catch (e) {}
@@ -861,7 +868,7 @@ function tierIndex() { const m = mult(); let t = 0; for (let i = 0; i < TIERS.le
 
 // ---------------------------------------------------------------- input
 const keys = {}, touchKeys = {}, pressedSet = new Set();
-const MAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', Space: 'jump', KeyJ: 'indy', KeyK: 'melon', KeyL: 'method', ShiftLeft: 'indy', ShiftRight: 'indy', KeyF: 'boost', KeyE: 'boost' };
+const MAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', Space: 'jump', KeyJ: 'indy', KeyK: 'melon', KeyL: 'method', ShiftLeft: 'indy', ShiftRight: 'indy', KeyF: 'boost', KeyQ: 'carveL', KeyE: 'carveR' };
 addEventListener('keydown', e => {
   if (e.code === 'Enter' && mode === 'menu') { startGame(); return; }
   if (e.code === 'Enter' && mode === 'results') { rideAgain(); return; }
@@ -879,7 +886,7 @@ addEventListener('keyup', e => { const k = MAP[e.code]; if (k) keys[k] = false; 
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; if (mode === 'play') togglePause(); });
 // gamepad (standard mapping)
 const padKeys = {}; let padPrev = [], padAxisX = 0, padSeen = false;
-const PAD_BTN = { 0: 'jump', 2: 'indy', 1: 'melon', 4: 'method', 5: 'indy', 3: 'boost', 12: 'up', 13: 'down', 14: 'left', 15: 'right', 7: 'up', 6: 'down' };
+const PAD_BTN = { 0: 'jump', 2: 'indy', 1: 'melon', 4: ['method', 'carveL'], 5: ['indy', 'carveR'], 3: 'boost', 12: 'up', 13: 'down', 14: 'left', 15: 'right', 7: 'up', 6: 'down' };
 function pollPad() {
   let gp = null;
   try { const list = navigator.getGamepads ? navigator.getGamepads() : []; for (const g of list) if (g && g.connected) { gp = g; break; } } catch (e) {}
@@ -888,7 +895,7 @@ function pollPad() {
   if (!gp) return;
   if (!padSeen) { padSeen = true; popup('Controller connected', 'minor'); }
   const b = gp.buttons.map(x => x.pressed || x.value > 0.4);
-  for (const i in PAD_BTN) { const k = PAD_BTN[i]; if (b[i]) { padKeys[k] = true; if (!padPrev[i]) pressedSet.add(k); } }
+  for (const i in PAD_BTN) { if (!b[i]) continue; for (const k of [].concat(PAD_BTN[i])) { padKeys[k] = true; if (!padPrev[i]) pressedSet.add(k); } }
   const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
   if (Math.abs(ax) > 0.18) padAxisX = Math.sign(ax) * (Math.abs(ax) - 0.18) / 0.82;
   if (ay < -0.45) padKeys.up = true;
@@ -1113,7 +1120,8 @@ function updateHUD() {
   elFill.style.width = meter + '%';
   const full = meter >= 99.9 && boostT <= 0 && P.state === 'ride';
   elMeter.classList.toggle('full', full); document.body.classList.toggle('meterfull', full);
-  if (lives !== shownLives) { shownLives = lives; elLives.innerHTML = Array.from({ length: MAX_LIVES }, (_, i) => `<span class="${i < lives ? 'on' : 'off'}">✦</span>`).join(''); }
+  const livesKey = infiniteLives ? -2 : lives;
+  if (livesKey !== shownLives) { shownLives = livesKey; elLives.innerHTML = infiniteLives ? '<span class="on">✦ ∞</span>' : Array.from({ length: MAX_LIVES }, (_, i) => `<span class="${i < lives ? 'on' : 'off'}">✦</span>`).join(''); }
 }
 
 // ---------------------------------------------------------------- scoring
@@ -1200,9 +1208,9 @@ function land(h) {
 function crash(reason) {
   if (P.state === 'crash') return;
   P.state = 'crash'; P.crashT = 1.5; P.grind = null; P.tumble = 0; stats.crashes++;
-  lives = Math.max(0, lives - 1);
+  if (!infiniteLives) lives = Math.max(0, lives - 1);
   popup(reason, 'crash'); loseChain();
-  popup(lives > 0 ? lives + (lives === 1 ? ' life' : ' lives') + ' left' : 'Out of lives', 'lost');
+  if (!infiniteLives) popup(lives > 0 ? lives + (lives === 1 ? ' life' : ' lives') + ' left' : 'Out of lives', 'lost');
   meter = Math.max(0, meter - 30);
   shake = 1; flash('rgba(255,60,120,.35)');
   burst(P.x, P.y + 0.8, P.z, 120, PAL_CRASH, 10, 1, 1); burst(P.x, P.y + 0.3, P.z, 60, PAL_SNOW, 8, 0.8, -10);
@@ -1217,7 +1225,7 @@ function updateCrash(dt) {
   P.vy -= G * dt; P.y += P.vy * dt;
   if (P.y < h) { P.y = h; P.vy = clamp((h - hOld) / Math.max(dt, 1e-4), -60, 10); }
   P.tumble += dt * 11 * clamp(P.crashT / 1.5, 0.15, 1);
-  if (P.crashT <= 0 && lives <= 0) { P.state = 'out'; gameOver(); return; }
+  if (P.crashT <= 0 && lives <= 0 && !infiniteLives) { P.state = 'out'; gameOver(); return; }
   if (P.crashT <= 0) {
     const sp = Math.max(12, Math.hypot(P.vx, P.vz)), th = trackHeading(P.z);
     P.state = 'ride'; P.grounded = true; P.y = groundH(P.x, P.z); P.heading = th; P.vx = Math.sin(th) * sp; P.vz = -Math.cos(th) * sp;
@@ -1263,12 +1271,16 @@ function tryGrind() {
 }
 function updateRide(dt, steerIn, up, down) {
   if (P.grounded) {
-    P.steer = lerp(P.steer, steerIn, ease(10, dt));
-    P.heading += P.steer * 2.3 * dt;
+    // hard carve: Q/E (or LB/RB, or Shift/TIGHT + a direction) — much tighter turns, scrubs more speed
+    const tightDir = (key('carveR') ? 1 : 0) - (key('carveL') ? 1 : 0);
+    P.tight = tightDir !== 0 || ((key('tight') || key('indy')) && steerIn !== 0);
+    const steerT = tightDir !== 0 ? tightDir : steerIn;
+    P.steer = lerp(P.steer, steerT, ease(P.tight ? 14 : 10, dt));
+    P.heading += P.steer * (P.tight ? 4.8 : 2.3) * dt;
     const gx = baseH(P.x + 0.5, P.z) - baseH(P.x - 0.5, P.z);
     P.heading -= gx * 1.5 * dt;
-    if (steerIn === 0) P.heading = lerp(P.heading, trackHeading(P.z - 12), ease(0.55, dt));
-    P.heading = clamp(P.heading, -1.35, 1.35);
+    if (steerT === 0) P.heading = lerp(P.heading, trackHeading(P.z - 12), ease(0.55, dt));
+    P.heading = clamp(P.heading, P.tight ? -1.55 : -1.35, P.tight ? 1.55 : 1.35);
     const rq = rampAt(P.x, P.z), onRamp = !!rq;
     let sp = Math.hypot(P.vx, P.vz);
     if (onRamp) {
@@ -1280,12 +1292,12 @@ function updateRide(dt, steerIn, up, down) {
       const gradeAlong = clamp(baseH(P.x, P.z) - baseH(P.x + hx, P.z + hz), -1.5, 2.0);
       const acc = G * gradeAlong * 1.05 + (boostT > 0 ? 30 : 0) + (up ? 3 : 0);
       const drag = (up ? 0.00108 : 0.0018) * sp * sp * (boostT > 0 ? 0.35 : 1);
-      const fric = (down || finished ? 18 : 0.8) + Math.abs(P.steer) * sp * 0.06;
+      const fric = (down || finished ? 18 : 0.8) + Math.abs(P.steer) * sp * (P.tight ? 0.1 : 0.06);
       sp = Math.max(finished ? 0 : 7, sp + (acc - drag - fric) * dt);
       const cap = capNow(); if (sp > cap) sp = Math.max(cap, sp - (boostT > 0 ? 30 : 14) * dt);
     }
     P.onRamp = onRamp;
-    const dx = Math.sin(P.heading), dz = -Math.cos(P.heading), grip = ease(onRamp ? 24 : 9, dt);
+    const dx = Math.sin(P.heading), dz = -Math.cos(P.heading), grip = ease(onRamp ? 24 : P.tight ? 16 : 9, dt);
     const nvx = P.vx + (dx * sp - P.vx) * grip, nvz = P.vz + (dz * sp - P.vz) * grip, nm = Math.hypot(nvx, nvz) || 1;
     P.vx = nvx / nm * sp; P.vz = nvz / nm * sp;
     P.spin *= Math.exp(-12 * dt); P.flip *= Math.exp(-12 * dt);
@@ -1400,17 +1412,26 @@ function updateRiderVisual(dt, steerIn, up) {
   P.roll = lerp(P.roll, tRoll, ease(P.grounded ? 14 : 4, dt));
   R.tilt.rotation.set(P.tilt, 0, P.roll);
   R.flipG.rotation.x = P.state === 'crash' ? P.tumble : -P.flip;
-  const leanT = P.grounded && P.state === 'ride' ? -P.steer * 0.38 * (P.switch ? -1 : 1) : 0;
+  const leanT = P.grounded && P.state === 'ride' ? -P.steer * (P.tight ? 0.72 : 0.38) * (P.switch ? -1 : 1) : 0;
   R.lean.rotation.z = lerp(R.lean.rotation.z, leanT, ease(10, dt));
   // pose
-  const crouch = P.grab ? -0.32 : (up && P.grounded ? -0.18 : 0);
-  R.body.position.y = lerp(R.body.position.y, crouch, ease(12, dt));
-  const armFx = P.grab ? 0.35 : 0.95 + Math.sin(time * 3) * 0.05, armBx = P.grab ? -0.35 : -0.95;
-  R.armF.rotation.x = lerp(R.armF.rotation.x, armFx, ease(12, dt));
-  R.armB.rotation.x = lerp(R.armB.rotation.x, armBx, ease(12, dt));
-  const armZ = P.grab === 'Indy' ? 0.5 : P.grab === 'Melon' ? -0.5 : P.grab === 'Method' ? 0.9 : 0;
-  R.armF.rotation.z = lerp(R.armF.rotation.z, armZ, ease(12, dt));
-  R.armB.rotation.z = lerp(R.armB.rotation.z, P.grab === 'Method' ? -0.3 : 0, ease(12, dt));
+  // grab pose: knees tuck, board comes up, one hand reaches the edge, the other arm flies out for style
+  // (rider faces +x: +x is the toe edge, -x the heel edge; front hand is at -z, back hand at +z)
+  const g = P.grab, k12 = ease(14, dt);
+  const crouch = g ? -0.2 : (up && P.grounded ? -0.18 : 0);
+  R.body.position.y = lerp(R.body.position.y, crouch, k12);
+  R.boardG.position.y = lerp(R.boardG.position.y, g ? 0.5 : 0, k12);
+  R.boardG.rotation.x = lerp(R.boardG.rotation.x, g === 'Method' ? -0.55 : 0, k12);
+  R.boardG.rotation.z = lerp(R.boardG.rotation.z, g === 'Melon' ? 0.25 : g === 'Indy' ? -0.2 : 0, k12);
+  R.body.rotation.z = lerp(R.body.rotation.z, g === 'Method' ? 0.35 : g ? -0.15 : 0, k12);
+  for (const L of [R.legF, R.legB]) { L.scale.y = lerp(L.scale.y, g ? 0.62 : 1, k12); L.rotation.z = lerp(L.rotation.z, g ? -0.55 : 0, k12); L.position.y = lerp(L.position.y, g ? 0.66 : 0.46, k12); }
+  const reach = [0.0, 0.42, 1.25], reachHeel = [0.0, -0.42, 1.25], flyF = [1.35, -0.5, 1], flyB = [-1.35, -0.5, 1];
+  let aF = [0.95 + Math.sin(time * 3) * 0.05, 0, 1], aB = [-0.95, 0, 1];
+  if (g === 'Indy') { aB = reach; aF = flyF; }            // back hand, toe edge
+  else if (g === 'Melon') { aF = reachHeel; aB = flyB; }  // front hand, heel edge
+  else if (g === 'Method') { aF = reachHeel; aB = [-1.2, 0.9, 1]; } // front hand heel edge, back arm up
+  R.armF.rotation.x = lerp(R.armF.rotation.x, aF[0], k12); R.armF.rotation.z = lerp(R.armF.rotation.z, aF[1], k12); R.armF.scale.y = lerp(R.armF.scale.y, aF[2], k12);
+  R.armB.rotation.x = lerp(R.armB.rotation.x, aB[0], k12); R.armB.rotation.z = lerp(R.armB.rotation.z, aB[1], k12); R.armB.scale.y = lerp(R.armB.scale.y, aB[2], k12);
   R.scarf.rotation.x = 1.1 + Math.sin(time * 14) * 0.18; R.scarf.rotation.z = Math.sin(time * 9) * 0.25;
   const ti = tierIndex(), haloOn = boostT > 0 || (chainCount > 0 && ti >= 3);
   R.halo.material.opacity = lerp(R.halo.material.opacity, haloOn ? 1 : 0, ease(4, dt));
@@ -1458,7 +1479,7 @@ function emitFire(dt) {
   }
   // snow spray on carves
   if (P.grounded && P.state === 'ride' && !P.grind && sp > 12) {
-    const carve = Math.abs(P.steer) + (key('down') ? 1 : 0);
+    const carve = Math.abs(P.steer) * (P.tight ? 1.8 : 1) + (key('down') ? 1 : 0);
     if (carve > 0.25) {
       const cnt = Math.min(10, carve * Math.min(sp, 40) * dt * 3 + Math.random()) | 0;
       const rx = Math.cos(P.heading), rz = Math.sin(P.heading), side = -Math.sign(P.steer || 1);
@@ -1577,7 +1598,7 @@ function updateAscend(dt) {
 }
 function winGame() {
   P.state = 'won'; R.root.visible = false;
-  const winBonus = 25000 + Math.max(0, Math.round((480 - runTime) * 150)) + lives * 5000;
+  const winBonus = 25000 + Math.max(0, Math.round((480 - runTime) * 150)) + (infiniteLives ? 0 : lives * 5000);
   finishBonus = winBonus; score += winBonus;
   $('win').classList.add('show'); arpeggio(); rumble(1, 1, 1200);
   setTimeout(() => arpeggio(), 400); setTimeout(() => { $('whiteout').style.opacity = 0; }, 600);
@@ -1603,7 +1624,7 @@ function showResults(kind) {
   $('stats').innerHTML = cell('Score', fmt(score), newBestScore ? nb : '')
     + cell(won ? 'Time' : 'Distance', won ? fmtTime(runTime) : fmt(clamp(-P.z, 0, COURSE_L)) + ' m', newBestTime ? nb : '')
     + cell(won ? 'Ascension bonus' : 'Time', won ? '+' + fmt(finishBonus) : fmtTime(runTime))
-    + cell('Biggest combo', fmt(stats.bestCombo)) + cell('Combo moves', fmt(stats.tricks)) + cell('Lives left', lives + ' / ' + MAX_LIVES)
+    + cell('Biggest combo', fmt(stats.bestCombo)) + cell('Combo moves', fmt(stats.tricks)) + cell('Lives left', infiniteLives ? '∞' : lives + ' / ' + MAX_LIVES)
     + cell('Best score', fmt(best)) + cell('Best time', bestTime ? fmtTime(bestTime) : '—') + cell('Wipeouts', fmt(stats.crashes));
   $('againBtn').textContent = won ? 'RIDE AGAIN' : 'START OVER';
   $('results').classList.remove('hidden'); mode = 'results';
@@ -1631,6 +1652,15 @@ $('againBtn').addEventListener('click', rideAgain);
 $('camBtn').addEventListener('click', e => { e.currentTarget.blur(); cycleCamera(); });
 document.querySelectorAll('.btnMusic').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); initAudio(); initMusic(); toggleMusic(); }));
 document.querySelectorAll('.btnSfx').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); initAudio(); toggleSfx(); }));
+function syncLivesButtons() { document.querySelectorAll('.btnLives').forEach(b => { b.querySelector('span').textContent = 'Lives: ' + (infiniteLives ? '∞' : MAX_LIVES); b.classList.toggle('inf', infiniteLives); }); }
+document.querySelectorAll('.btnLives').forEach(b => b.addEventListener('click', e => {
+  e.currentTarget.blur();
+  infiniteLives = !infiniteLives;
+  if (!infiniteLives) lives = Math.max(1, Math.min(lives, MAX_LIVES));
+  try { localStorage.setItem('violetSlopesInfinite', infiniteLives ? '1' : '0'); } catch (e2) {}
+  shownLives = -1; syncLivesButtons();
+}));
+syncLivesButtons();
 syncSoundButtons();
 $('camBtn').querySelector('span').textContent = CAM_MODES[camMode].name;
 function restartFromPause() {

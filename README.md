@@ -18,11 +18,13 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 | Action | Keyboard | Controller |
 | --- | --- | --- |
 | Carve / spin in air | A D or ← → | Left stick / D-pad |
+| **Tight carve** (sharp turn, sheds speed) | Q / E, or Shift + A/D | LB / RB on the ground |
 | Tuck / frontflip in air | W or ↑ | Stick up / RT |
 | **Brake** (on the ground) / backflip in air | S or ↓ | Stick down / LT |
 | Ollie, pop off rails | Space | A |
-| Grabs (Indy, Melon, Method) | J K L / Shift | X, B, LB, RB |
+| Grabs in the air (Indy, Melon, Method) | J K L / Shift | X (Indy), B (Melon), LB (Method), RB (Indy) |
 | Violet Flame boost (meter full) | F | Y |
+| Lives: 5 or ∞ | ✦ Lives button (start or pause screen) | — |
 | Pause · start over (while paused) | P / Esc · R | Start · Back/Select |
 | Camera (Chase / Far / Close / High) | C or the 🎥 button | Stick click (R3/L3) |
 | Music on/off · sound effects on/off | N · M (or the 🎵 / 🔊 buttons) | Back/Select (music) |
@@ -32,7 +34,7 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 - **Combos.** Tricks, hoops and grinds raise the multiplier. The fire trail changes through five tiers: Violet Spark, Violet Flame, Amethyst Blaze, Transmutation and Ascension. Points bank after 3 seconds without a new combo move.
 - **Violet Flame boost.** Combo moves fill the meter. When it is full, it stays full until you use it, and while it waits the meter glows and a button prompt flashes. The boost gives 7 seconds of extra speed (up to 90 km/h over the stage limit) and double points, and you burn through trees instead of crashing into them.
 - **The course.** It is the same fixed, seeded course every run. It curves more, gets steeper and fills with more obstacles as you descend. Along the way are steep walls ("Amethyst Wall"), cliff drops ("Leap of Faith") and rollers. Top speed rises stage by stage: 120, 165, 210, 255, then 300 km/h in the final stage. The Violet Flame boost breaks the limit by up to 90 km/h, then eases back down when it ends.
-- **Lives.** You have five. Every wipeout costs one, and at zero you start over.
+- **Lives.** You have five. Every wipeout costs one, and at zero you start over. Switch to infinite lives with the ✦ Lives button on the start or pause screen (no lives bonus at the finish).
 - **The ending.** The run funnels into a giant ramp that launches you into the violet sun, and **YOU WIN**.
 
 ## Credits
