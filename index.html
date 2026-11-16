@@ -589,7 +589,7 @@ function spawnSegment(z0) {
   segIndex++;
   const SEG = 55, s0 = -z0, d = clamp(s0 / COURSE_L, 0, 1);
   const cx = z => cxAt(z);
-  for (let k = 0; k < 10; k++) for (const side of [-1, 1]) { const z = z0 - srand(0, SEG), u = srand(30, 66); addTree(cx(z) + side * u, z, srand(0.8, 1.8), u < 43); }
+  for (let k = 0; k < 4; k++) for (const side of [-1, 1]) { const z = z0 - srand(0, SEG), u = srand(36, 70); addTree(cx(z) + side * u, z, srand(0.8, 1.8), u < 43); }
   for (let k = 0; k < 2; k++) if (rng() < 0.6) { const side = rng() < 0.5 ? -1 : 1, z = z0 - srand(0, SEG); const u = srand(27, 45); addCrystal(cx(z) + side * u, z, srand(0.7, 1.6), u < 43); }
   if (rng() < 0.5) { const side = rng() < 0.5 ? -1 : 1, z = z0 - srand(0, SEG); addRock(cx(z) + side * srand(24, 40), z, srand(0.8, 2.2), false); }
   // crystal beacons marking the edge of a drop
@@ -616,9 +616,9 @@ function spawnSegment(z0) {
     else if (r < 0.5) { const len = srand(22, 38) + 20 * d; makeRail(x, zs, len, a); if (rng() < 0.5) for (let i = 0; i < 4; i++) { const al = 6 + i * 6, ox = x + Math.sin(a) * al, oz = zs - Math.cos(a) * al; makeOrb(ox, baseH(ox, oz) + 2.0, oz); } }
     else if (r < 0.64) { for (let i = 0; i < 3; i++) { const hz = zs - i * 15, hx = cx(hz) + LANES[L] + Math.sin(i * 1.3) * 3; makeHoop(hx, baseH(hx, hz) + 3.15, hz, 3.0, false, trackHeading(hz)); } }
     else if (r < 0.76 - 0.06 * d) { const ph = srand(0, 3); for (let i = 0; i < 8; i++) { const oz = zs - i * 5.5, ox = cx(oz) + LANES[L] + Math.sin(ph + i * 0.55) * 4; makeOrb(ox, baseH(ox, oz) + 1.2, oz); } }
-    else if (r < 0.86) { makePad(x, zs - 4, 6, 8); for (let i = 0; i < 4; i++) { const oz = zs - 14 - i * 5, ox = cx(oz) + LANES[L]; makeOrb(ox, baseH(ox, oz) + 1.3, oz); } }
+    else if (r < 0.94) { makePad(x, zs - 4, 6, 8); for (let i = 0; i < 4; i++) { const oz = zs - 14 - i * 5, ox = cx(oz) + LANES[L]; makeOrb(ox, baseH(ox, oz) + 1.3, oz); } }
     else { // slalom — tighter and longer the deeper you go
-      const n = 4 + Math.round(3 * d), gap = 4.6 - 1.4 * d;
+      const n = 3 + Math.round(2 * d), gap = 5.2 - 1.0 * d;
       for (let i = 0; i < n; i++) { const tz = zs - i * (11 - 3 * d), tx = cx(tz) + LANES[L] + (i % 2 ? gap : -gap); addTree(tx, tz, srand(0.8, 1.1), true); const oz = tz - 4, ox = cx(oz) + LANES[L]; makeOrb(ox, baseH(ox, oz) + 1.2, oz); }
       laneBlock[L] = 1;
     }
@@ -626,21 +626,21 @@ function spawnSegment(z0) {
   // obstacles in free lanes — more of them further down
   for (const L of order) {
     if (used.includes(L) || laneBlock[L] > 0) continue;
-    if (rng() < 0.4 + 0.55 * d) {
-      const n = 1 + Math.floor(rng() * (2 + 4 * d));
+    if (rng() < 0.22 + 0.33 * d) {
+      const n = 1 + Math.floor(rng() * (1 + 2 * d));
       for (let i = 0; i < n; i++) {
         const oz = z0 - srand(5, 50); if (nearDrop(-oz)) continue;
         const ox = cx(oz) + LANES[L] + srand(-5, 5);
-        if (rng() < 0.6) addTree(ox, oz, srand(0.7, 1.2), true); else addRock(ox, oz, srand(0.7, 1.3 + 0.6 * d), true);
+        if (rng() < 0.2) addTree(ox, oz, srand(0.7, 1.2), true); else addRock(ox, oz, srand(0.7, 1.3 + 0.6 * d), true);
       }
     }
   }
   // scattered hazards anywhere on the run in the later stages
-  const extra = Math.floor(d * d * 4 + rng() * d * 2);
+  const extra = Math.floor(d * d * 1.5 + rng() * d);
   for (let i = 0; i < extra; i++) {
     const oz = z0 - srand(0, SEG); if (nearDrop(-oz)) continue;
     const u = srand(-19, 19); if (used.some(L => Math.abs(u - LANES[L]) < 6)) continue;
-    if (rng() < 0.5) addRock(cx(oz) + u, oz, srand(0.8, 1.5), true); else addTree(cx(oz) + u, oz, srand(0.7, 1.1), true);
+    if (rng() < 0.8) addRock(cx(oz) + u, oz, srand(0.8, 1.5), true); else addTree(cx(oz) + u, oz, srand(0.7, 1.1), true);
   }
   laneBlock = laneBlock.map(v => Math.max(0, v - 1));
 }
@@ -926,11 +926,6 @@ function initAudio() {
     const gf = actx.createBiquadFilter(); gf.type = 'bandpass'; gf.frequency.value = 3200; gf.Q.value = 3;
     grindGain = actx.createGain(); grindGain.gain.value = 0;
     src2.connect(gf).connect(grindGain).connect(sfxBus); src2.start();
-    // mystic drone
-    padFilter = actx.createBiquadFilter(); padFilter.type = 'lowpass'; padFilter.frequency.value = 500;
-    padGain = actx.createGain(); padGain.gain.value = 0.05;
-    padFilter.connect(padGain).connect(sfxBus);
-    [110, 164.81, 220.5, 277.18].forEach((f, i) => { const o = actx.createOscillator(); o.type = i % 2 ? 'triangle' : 'sawtooth'; o.frequency.value = f; o.detune.value = rand(-8, 8); const g = actx.createGain(); g.gain.value = i % 2 ? 0.5 : 0.18; o.connect(g).connect(padFilter); o.start(); });
   } catch (e) { actx = null; }
 }
 function tone(freq, dur, type = 'sine', vol = 0.15, delay = 0) {
@@ -1265,7 +1260,7 @@ function updateRide(dt, steerIn, up, down) {
     const rq = rampAt(P.x, P.z), onRamp = !!rq;
     let sp = Math.hypot(P.vx, P.vz);
     if (onRamp) {
-      if (!P.onRamp) { tone(300, 0.4, 'sawtooth', 0.04); }
+      if (!P.onRamp) { tone(300, 0.4, 'triangle', 0.035); }
       sp = Math.max(sp, rq.r.finale ? 70 : rq.r.v); P.lastRamp = rq.r; P.heading = lerp(P.heading, rq.r.a, ease(16, dt));
       const k = rq.lat * ease(4, dt); P.x -= rq.r.rx * k; P.z -= rq.r.rz * k;
     } else {
@@ -1355,7 +1350,7 @@ function checkObjects(prevX, prevZ) {
       P.vx *= ns / sp; P.vz *= ns / sp;
       event(100, 'Violet Surge', false); meter = Math.min(100, meter + 8);
       burst(P.x, P.y + 0.5, P.z, 60, firePal, 8, 1, 4);
-      tone(220, 0.6, 'sawtooth', 0.05); tone(440, 0.6, 'sine', 0.06, 0.05);
+      tone(220, 0.6, 'triangle', 0.05); tone(440, 0.6, 'sine', 0.06, 0.05);
     }
   }
   if (P.state !== 'ride' || P.grind) return;
@@ -1523,8 +1518,6 @@ function updateAudio() {
   windGain.gain.setTargetAtTime(0, t, 0.1); // snow/wind rush muted for now
   windFilter.frequency.setTargetAtTime(250 + sp * 22 + (P.grounded ? 0 : 400), t, 0.1);
   grindGain.gain.setTargetAtTime(P.grind ? 0.12 : 0, t, 0.03);
-  padFilter.frequency.setTargetAtTime(400 + meter * 10 + (boostT > 0 ? 1800 : 0), t, 0.4);
-  padGain.gain.setTargetAtTime(boostT > 0 ? 0.09 : 0.05, t, 0.4);
 }
 
 // ---------------------------------------------------------------- stages, finish, restart
@@ -1554,7 +1547,7 @@ function startAscension() {
   const p1 = new THREE.Vector3(P.x + fx * 320, P.y + 160, P.z + fz * 320);
   asc = { t: 0, dur: 6, p0, p1, p2: sunW, prev: p0.clone() };
   popup('ASCEND!', 'tier', '#ffe9a8'); arpeggio(); rumble(0.8, 1, 900); flash('rgba(255,220,150,.45)');
-  tone(110, 3, 'sawtooth', 0.05); tone(220, 3, 'triangle', 0.05, 0.3);
+  tone(220, 2.5, 'sine', 0.05); tone(330, 2.5, 'sine', 0.04, 0.3);
 }
 const ascTmp = new THREE.Vector3();
 function updateAscend(dt) {
@@ -1648,7 +1641,7 @@ function update(dt) {
   const up = key('up'), down = key('down');
   if (pressed('boost') && meter >= 99.9 && boostT <= 0 && P.state === 'ride') {
     boostT = BOOST_DUR; popup('I AM the Violet Flame', 'tier', '#ffd6ff'); rumble(0.5, 1, 600); flash('rgba(220,120,255,.55)');
-    burst(P.x, P.y + 1, P.z, 90, TIERS[4].pal, 16, 0.8, 3); arpeggio(); tone(110, 2, 'sawtooth', 0.06);
+    burst(P.x, P.y + 1, P.z, 90, TIERS[4].pal, 16, 0.8, 3); arpeggio(); tone(220, 1.6, 'sine', 0.05);
     meterFullShown = false;
   }
   if (boostT > 0) { boostT -= dt; meter = Math.max(0, meter - 100 / BOOST_DUR * dt); if (boostT <= 0) { boostT = 0; popup('The flame settles', 'minor'); } }
