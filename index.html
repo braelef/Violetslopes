@@ -62,6 +62,7 @@
   @keyframes breathe{50%{filter:drop-shadow(0 0 40px rgba(200,100,255,1))}}
   .sub{font-family:'Cinzel';font-size:15px;letter-spacing:.35em;text-transform:uppercase;margin:14px 0 26px;color:#e2c4ff}
   .overlay{overflow-y:auto}
+  .panel.hidden{display:none}
   #menu .panel{margin:auto;padding:22px 18px;max-width:920px}
   #menu h1{font-size:clamp(36px,5.4vw,70px)}
   @media (min-width:700px){#menu h1{white-space:nowrap}}
@@ -195,14 +196,21 @@
   </div>
 </div>
 <div class="overlay hidden" id="pause">
-  <div class="panel">
+  <div class="panel" id="pauseMain">
     <h1 style="font-size:64px">PAUSED</h1>
     <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
       <button class="go" id="resumeBtn">RESUME</button>
+      <button class="go" id="ctlBtn" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">CONTROLS</button>
       <button class="go" id="restartBtn" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">START OVER</button>
     </div>
     <div style="margin-top:18px"><div class="sndRow"><button class="sndBtn btnMusic"><i>🎵</i> Music <kbd>N</kbd></button><button class="sndBtn btnSfx"><i>🔊</i> Sound FX <kbd>M</kbd></button><button class="sndBtn btnLives"><i>✦</i> <span>Lives: 5</span></button></div></div>
-    <div class="note">Controller: Start to resume · Back/Select to start over</div>
+    <div class="note">Controller: Start to resume · Y for controls · Back/Select to start over</div>
+  </div>
+  <div class="panel hidden" id="pauseCtl" style="margin:auto;padding:22px 18px;max-width:920px">
+    <h1 style="font-size:clamp(36px,5vw,56px)">CONTROLS</h1>
+    <div id="ctlSlot" style="margin-top:16px"></div>
+    <button class="go" id="ctlBack">BACK</button>
+    <div class="note">Esc / P or Start to resume · Y or B to go back</div>
   </div>
 </div>
 <div id="err"></div>
@@ -902,6 +910,11 @@ function pollPad() {
   if (ay > 0.45) padKeys.down = true;
   // Start = start / pause, Back/Select = music
   if (b[9] && !padPrev[9]) { if (mode === 'menu') startGame(); else if (mode !== 'results') togglePause(); }
+  if (mode === 'paused') {
+    const ctlOpen = !$('pauseCtl').classList.contains('hidden');
+    if (b[3] && !padPrev[3]) showPauseControls(!ctlOpen);
+    if (b[1] && !padPrev[1] && ctlOpen) showPauseControls(false);
+  }
   if ((b[11] && !padPrev[11]) || (b[10] && !padPrev[10])) cycleCamera();
   if (b[8] && !padPrev[8]) { if (mode === 'paused') restartFromPause(); else toggleMusic(); }
   if (mode === 'menu' && b[0] && !padPrev[0]) startGame();
@@ -1672,6 +1685,11 @@ function restartFromPause() {
   popup('Descend', 'tier', '#e7c6ff');
 }
 $('restartBtn').addEventListener('click', restartFromPause);
+// pause → controls view (reuses the start screen's controls table)
+$('ctlSlot').appendChild(document.querySelector('#menu .ctl').cloneNode(true));
+function showPauseControls(on) { $('pauseMain').classList.toggle('hidden', on); $('pauseCtl').classList.toggle('hidden', !on); }
+$('ctlBtn').addEventListener('click', e => { e.currentTarget.blur(); showPauseControls(true); });
+$('ctlBack').addEventListener('click', e => { e.currentTarget.blur(); showPauseControls(false); });
 
 // ---------------------------------------------------------------- main update
 function update(dt) {
@@ -1730,7 +1748,7 @@ function startGame() {
   popup('Descend', 'tier', '#e7c6ff');
 }
 function togglePause() {
-  if (mode === 'play') { mode = 'paused'; $('pause').classList.remove('hidden'); if (actx) actx.suspend(); if (!useSynth) musicEl.pause(); }
+  if (mode === 'play') { mode = 'paused'; showPauseControls(false); $('pause').classList.remove('hidden'); if (actx) actx.suspend(); if (!useSynth) musicEl.pause(); }
   else if (mode === 'paused') { mode = 'play'; $('pause').classList.add('hidden'); if (actx) actx.resume(); if (!useSynth && musicOn) startRecording(); }
 }
 $('startBtn').addEventListener('click', startGame);

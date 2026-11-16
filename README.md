@@ -25,7 +25,7 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 | Grabs in the air (Indy, Melon, Method) | J K L / Shift | X (Indy), B (Melon), LB (Method), RB (Indy) |
 | Violet Flame boost (meter full) | F | Y |
 | Lives: 5 or ∞ | ✦ Lives button (start or pause screen) | — |
-| Pause · start over (while paused) | P / Esc · R | Start · Back/Select |
+| Pause · controls · start over (while paused) | P / Esc · Controls button · R | Start · Y · Back/Select |
 | Camera (Chase / Far / Close / High) | C or the 🎥 button | Stick click (R3/L3) |
 | Music on/off · sound effects on/off | N · M (or the 🎵 / 🔊 buttons) | Back/Select (music) |
 
