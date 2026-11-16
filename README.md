@@ -24,6 +24,7 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 | Grabs (Indy, Melon, Method) | J K L / Shift | X, B, LB, RB |
 | Violet Flame boost (meter full) | F | Y |
 | Pause · start over (while paused) | P / Esc · R | Start · Back/Select |
+| Camera (Chase / Far / Close / High) | C or the 🎥 button | Stick click (R3/L3) |
 | Music on/off · mute all | N · M | Back/Select |
 
 ## How it plays
