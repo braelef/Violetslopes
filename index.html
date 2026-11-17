@@ -257,7 +257,7 @@
 <script>
   window.addEventListener('error', e => {
     const el = document.getElementById('err');
-    if (!window.__started) { el.style.display = 'flex'; el.textContent = 'Violet Slopes could not start: ' + (e.message || 'a script failed to load') + '. Try reloading the page.'; }
+    if (!window.__ready) { el.style.display = 'flex'; el.textContent = 'Violet Slopes could not start: ' + (e.message || 'a script failed to load') + '. Try reloading the page.'; }
   });
 </script>
 
@@ -287,7 +287,7 @@ try { Object.assign(settings, JSON.parse(localStorage.getItem('violetSlopesSetti
 const slower = () => settings.difficulty === 'slower';
 let LEVEL = 1; try { LEVEL = +localStorage.getItem('violetSlopesLevel') === 2 ? 2 : 1; } catch (e) {}
 const launchKmh = () => slower() ? 500 : 1000; // level 2: escape velocity
-let G = 24;
+let G = 24, time = 0; // time is declared early: the ocean surface depends on it from the very first frame
 const applyGravity = () => { G = 24 * settings.gravity / 100 * (slower() ? 0.85 : 1) * (LEVEL === 2 ? 1.5 : 1); };
 applyGravity();
 const SLOPE = 0.32, OLLIE = 12.5, RAMP_V = 32, CHAIN_WIN = 3.0, BOOST_DUR = 7;
@@ -1059,7 +1059,7 @@ let groundT = 0, straightTold = false, topSpeed = 0;
 let lives = MAX_LIVES, shownLives = -1, celestialFrozen = false, asc = null;
 let runTime = 0, finished = false, stageIdx = -1, finishBonus = 0, stats = { tricks: 0, crashes: 0, bestCombo: 0 }, bestTime = 0;
 try { bestTime = +localStorage.getItem('violetSlopesBestTime') || 0; } catch (e) {}
-let mode = 'menu', time = 0, score = 0, best = 0, chainCount = 0, chainPoints = 0, chainTimer = 0, meter = 0, boostT = 0, lastTier = -1, shake = 0, emitAcc = 0, startZ = 0, meterFullShown = false;
+let mode = 'menu', score = 0, best = 0, chainCount = 0, chainPoints = 0, chainTimer = 0, meter = 0, boostT = 0, lastTier = -1, shake = 0, emitAcc = 0, startZ = 0, meterFullShown = false;
 try { best = +localStorage.getItem('violetSlopesBest') || 0; } catch (e) {}
 const camPos = new THREE.Vector3(0, P.y + 5, 12), camDir = new THREE.Vector3(0, 0, -1), camLook = new THREE.Vector3();
 
@@ -2115,6 +2115,7 @@ function frame(now) {
   composer.render();
 }
 requestAnimationFrame(frame);
+window.__ready = true;
 </script>
 </body>
 </html>
