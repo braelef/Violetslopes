@@ -41,6 +41,16 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 - **Lives.** You have five. Every wipeout costs one, and at zero you start over. Switch to infinite lives with the ✦ Lives button on the start or pause screen (no lives bonus at the finish).
 - **The ending.** The last 2.6 km is The Final Straight: long, steep and dead straight, with no obstacles, just orbs and surge pads. The speed limit climbs from 300 to 1,200 km/h, with a strong tailwind to get you there. It funnels into a giant ramp that launches you into the violet sun, and **YOU WIN**.
 
+## Level 2 · Ocean Ascent
+
+Pick it on the start screen, or press **LEVEL 2 →** after beating level 1.
+
+- **The ocean.** It's a deep-blue sea of huge moving swells that grow taller the further out you go.
+- **Surfing.** Riding down a wave face gives you more speed than climbing the next one takes away, and the swell keeps pushing you along. Your speed climbs steadily, taking roughly 4½–5 minutes to max out, sooner if you tuck and use the boost.
+- **Dipping under.** You sit slightly in the water, and hard landings plunge you below the surface with a splash before you bob back up.
+- **Speed tiers.** The bar at the top tracks your best speed through The Swell, Big Water, Mountain Seas, Tsunami Run and Escape Velocity.
+- **The finish.** At **1,000 km/h** (500 on Slower) you launch into space. The sky drains to black and the stars come out, then **YOU WIN**.
+
 ## Settings
 
 Open **⚙ Settings** from the start screen or the pause screen. Your choices are saved.
