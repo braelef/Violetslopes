@@ -286,7 +286,7 @@ let settings = { ...SETTINGS_DEF };
 try { Object.assign(settings, JSON.parse(localStorage.getItem('violetSlopesSettings') || '{}')); } catch (e) {}
 const slower = () => settings.difficulty === 'slower';
 let LEVEL = 1; try { LEVEL = +localStorage.getItem('violetSlopesLevel') === 2 ? 2 : 1; } catch (e) {}
-const launchKmh = () => slower() ? 500 : 1000; // level 2: escape velocity
+const launchKmh = () => slower() ? 750 : 1500; // level 2: escape velocity
 let G = 24, time = 0; // time is declared early: the ocean surface depends on it from the very first frame
 const applyGravity = () => { G = 24 * settings.gravity / 100 * (slower() ? 0.85 : 1) * (LEVEL === 2 ? 1.5 : 1); };
 applyGravity();
@@ -352,7 +352,7 @@ function sampleT(arr, s) { if (s <= 0) return arr[0]; if (s >= CN - 1) return ar
 function profH(s) { if (s <= 0) return -s * SLOPE; if (s >= CN - 1) return FhT[CN - 1] - 0.1 * (s - CN + 1); return sampleT(FhT, s); }
 const cxAt = z => LEVEL === 2 || -z <= 0 ? 0 : sampleT(cxT, -z);
 // level 2: big moving swells that grow taller the further out you surf
-const OC = { big: 45, a0: 3, a1: 18, grow: 35000, l1: 200, l2: 120, down: 1.2, up: 0.9, push: 0.8, tuck: 1.0, air: 0.4, thrust: 100 / 3.6 / 6, stick: 45, landGain: 0.8, landMax: 50 };
+const OC = { big: 45, a0: 3, a1: 18, grow: 35000, l1: 200, l2: 120, down: 1.2, up: 0.9, push: 0.8, tuck: 1.0, air: 0.4, thrust: 100 / 3.6 / 6, stick: 1e6, landGain: 0.8, landMax: 50 };
 const oceanAmp = z => lerp(OC.a0, OC.a1, clamp(-z / OC.grow, 0, 1));
 // giant sets: three incommensurate swells (uneven spacing) that build from ~8 km out to ~45 m tall by ~22 km
 const oceanBig = z => { const f = clamp((-z - 8000) / 14000, 0, 1); return OC.big * f * f * (3 - 2 * f); };
@@ -701,9 +701,10 @@ function spawnOceanSegment(z0) {
   segIndex++;
   if (segIndex < 2) return;
   const A = oceanAmp(z0), r = rng();
-  if (r < 0.38) { const x0 = srand(-30, 30); for (let i = 0; i < 6; i++) makeOrb(x0 + Math.sin(i * 0.5) * 5, 0, z0 - 6 - i * 8); }
-  else if (r < 0.55) { const hx = srand(-25, 25), hz = z0 - srand(10, 45); makeHoop(hx, A * 1.45 + oceanBig(hz) + srand(5, 12), hz, 4.2, true, 0); }
-  if (settings.powerups && segIndex > 6 && rng() < 0.22) { const kinds = ['thrust', 'thrust', 'thrust', 'jet']; const px = srand(-25, 25), pz = z0 - srand(10, 45); makePowerup(kinds[Math.floor(rng() * 4)], px, 0, pz); }
+  const ax = clamp(P.x, -100, 100);
+  if (r < 0.38) { const x0 = ax + srand(-30, 30); for (let i = 0; i < 6; i++) makeOrb(x0 + Math.sin(i * 0.5) * 5, 0, z0 - 6 - i * 8); }
+  else if (r < 0.55) { const hx = ax + srand(-25, 25), hz = z0 - srand(10, 45); makeHoop(hx, A * 1.45 + oceanBig(hz) + srand(5, 12), hz, 4.2, true, 0); }
+  if (settings.powerups && segIndex > 6 && rng() < 0.22) { const kinds = ['thrust', 'thrust', 'thrust', 'jet']; const px = ax + srand(-25, 25), pz = z0 - srand(10, 45); makePowerup(kinds[Math.floor(rng() * 4)], px, 0, pz); }
 }
 function spawnSegment(z0) {
   if (LEVEL === 2) return spawnOceanSegment(z0);
@@ -1486,7 +1487,7 @@ function updateRide(dt, steerIn, up, down) {
     P.steer = lerp(P.steer, steerT, ease(P.tight ? 14 : 10, dt));
     P.heading += P.steer * (P.tight ? 4.8 : 2.3) * (bootsOn() ? 1.25 : 1) * dt;
     const gx = baseH(P.x + 0.5, P.z) - baseH(P.x - 0.5, P.z);
-    P.heading -= gx * 1.5 * dt;
+    if (LEVEL === 1) P.heading -= gx * 1.5 * dt; // banks push you back toward the run (no banks at sea)
     if (steerT === 0) P.heading = lerp(P.heading, trackHeading(P.z - 12), ease(0.55, dt));
     P.heading = clamp(P.heading, P.tight ? -1.55 : -1.35, P.tight ? 1.55 : 1.35);
     const rq = rampAt(P.x, P.z), onRamp = !!rq;
@@ -1539,12 +1540,13 @@ function updateRide(dt, steerIn, up, down) {
 
   const hOld = groundH(P.x, P.z);
   P.x += P.vx * dt; P.z += P.vz * dt;
+  if (LEVEL === 2 && Math.abs(P.x) > 110 && P.state === 'ride') P.heading = lerp(P.heading, -Math.sign(P.x) * 0.5, ease(1.5, dt)); // open sea: steer gently back
   { const c = cxAt(P.z), u = P.x - c, lim = finaleLimit(-P.z); if (Math.abs(u) > lim) { P.x = c + Math.sign(u) * lim; const th = trackHeading(P.z); P.heading = th - (P.heading - th) * 0.5; P.vx *= 0.5; } }
   const hNew = groundH(P.x, P.z);
 
   if (P.grounded) {
     const step = hNew - hOld;
-    if (step > Math.max(2.0, 1.2 * Math.hypot(P.vx, P.vz) * dt)) { crash('Hit the ramp side!'); P.y = hNew; return; }
+    if (LEVEL === 1 && step > Math.max(2.0, 1.2 * Math.hypot(P.vx, P.vz) * dt)) { crash('Hit the ramp side!'); P.y = hNew; return; }
     const gvy = clamp(step / Math.max(dt, 1e-4), -60, 14);
     if (P.vy - gvy > G * dt * (LEVEL === 2 ? OC.stick : 1.6) && (!bootsOn() || P.onRamp)) { // water holds the board through crests
       const lr = P.onRamp ? P.lastRamp : null, spL = Math.hypot(P.vx, P.vz);
@@ -1812,7 +1814,7 @@ function updateProgress(dt) {
     topSpeed = Math.max(topSpeed, kmh);
     let st = 0; SEA_TIERS.forEach((q, i) => { if (topSpeed / L >= q[1]) st = i; });
     if (st > stageIdx) { stageIdx = st; elStage.textContent = SEA_TIERS[st][0]; popup(SEA_TIERS[st][0], 'tier', '#8fe3ff'); if (st === 4) popup('Reach ' + L + ' km/h to break free!', 'minor', '#ffd36a'); }
-    if (!finished && kmh >= L - 1) startSpaceLaunch();
+    if (!finished && kmh >= L - 1) { popup('ESCAPE VELOCITY!', 'tier', '#8fe3ff'); startAscension(); } // launch into the violet sun
     return;
   }
   const s = -P.z;
@@ -1900,7 +1902,7 @@ function showResults(kind) {
   try { localStorage.setItem('violetSlopesBest', String(best)); localStorage.setItem('violetSlopesBestTime', String(bestTime)); } catch (e) {}
   $('win').classList.remove('show');
   $('resTitle').textContent = won ? 'YOU WIN' : 'GAME OVER';
-  $('resSub').textContent = won ? (LEVEL === 2 ? 'You surfed all the way into space' : 'You rode the Violet Flame into the sun') : (LEVEL === 2 ? 'Out of lives — the sea awaits your return' : 'Out of lives — the mountain awaits your return');
+  $('resSub').textContent = won ? (LEVEL === 2 ? 'You surfed all the way into the sun' : 'You rode the Violet Flame into the sun') : (LEVEL === 2 ? 'Out of lives — the sea awaits your return' : 'Out of lives — the mountain awaits your return');
   $('nextBtn').style.display = won && LEVEL === 1 ? '' : 'none';
   const cell = (l, v, extra = '') => `<div><span class="lbl">${l}</span><b>${v}</b>${extra}</div>`;
   const nb = '<span class="lbl" style="color:#ffd36a">New best</span>';
