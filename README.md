@@ -52,9 +52,21 @@ Pick it on the start screen, or press **LEVEL 2 →** after beating level 1.
 - **Power-ups at sea.** These are mostly Mega Thrusters, which give a +100 km/h burst on top of your speed, plus the occasional jetpack. There are no gravity boots at sea.
 - **The finish.** At **1,500 km/h** (750 on Slower) you launch off the sea into the violet sun, then **YOU WIN**.
 
+## Level 3 · Cosmic Flight
+
+You fly your board through outer space for 24 km toward the Great Central Sun.
+
+- **Flying.** A/D turn and W/S climb or dive. Your speed builds from 120 to 600 km/h (80 to 300 on Slower).
+- **Tricks.** Space does a loop-the-loop and Q/E do a 360 spin; each scores the moment you complete it. Grabs score for as long as you hold them. Your combo banks after 3 seconds with no trick in progress.
+- **Hazards and pickups.** Asteroid fields grow denser as you go; hitting one costs a life, and the Rocks setting turns them off. Star gates (rings), orb trails and +200 km/h thrusters help you along.
+- **Stages.** Low Orbit, The Asteroid Belt, Nebula Drift, The Starfield and The Great Central Sun.
+- **The finish.** At the end of the flight you fly into the Sun, then **YOU WIN**.
+
 ## Settings
 
 Open **⚙ Settings** from the start screen or the pause screen. Your choices are saved.
+
+- **Level:** Violet Slopes, Ocean Ascent or Cosmic Flight. Switching levels from the pause screen starts a fresh run.
 
 - **Difficulty:** Normal, or Slower. Slower caps every stage at 150 km/h (the final straight at 600 km/h) and makes gravity 15% lighter.
 - **Gravity:** a slider from 50% to 150%.

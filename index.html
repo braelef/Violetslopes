@@ -120,7 +120,8 @@
   #puWrap{width:200px;height:5px;margin:6px auto 0;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
   #puFill{height:100%;width:100%;background:var(--puc);box-shadow:0 0 10px var(--puc)}
   .levelSeg{margin:0 auto 16px}
-  .levelSeg button{font-size:13px;padding:9px 16px}
+  .levelSeg button{font-size:13px;padding:9px 14px}
+  .settings .seg[data-set=level] button{padding:7px 10px;font-size:11.5px}
   .settings{margin:16px auto 20px;text-align:left;background:rgba(20,4,40,.55);border:1px solid rgba(200,150,255,.22);border-radius:18px;padding:6px 18px;box-shadow:0 0 30px rgba(120,40,220,.25)}
   .set-r{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-top:1px solid rgba(220,180,255,.1)}
   .set-r:first-child{border-top:none}
@@ -186,7 +187,7 @@
   <div class="panel" id="menuMain">
     <h1>VIOLET SLOPES</h1>
     <div class="sub">Ride the Violet Flame of Transmutation</div>
-    <div class="seg levelSeg" data-set="level"><button data-v="1">Level 1 · Violet Slopes</button><button data-v="2">Level 2 · Ocean Ascent</button></div>
+    <div class="seg levelSeg" data-set="level"><button data-v="1">Level 1 · Violet Slopes</button><button data-v="2">Level 2 · Ocean Ascent</button><button data-v="3">Level 3 · Cosmic Flight</button></div>
     <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
       <button class="go" id="startBtn">BEGIN DESCENT</button>
       <button class="go setOpen" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">⚙ SETTINGS</button>
@@ -202,6 +203,7 @@
       <div class="ctl-r"><span class="act">Grab<small>hold in the air</small></span><span class="keys"><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd><kbd>Shift</kbd></span><span class="keys"><kbd>X</kbd> Indy · <kbd>B</kbd> Melon · <kbd>LB</kbd><kbd>RB</kbd></span></div>
       <div class="ctl-r"><span class="act">Violet Flame boost<small>when the meter is full</small></span><span class="keys"><kbd>F</kbd></span><span class="keys"><kbd>Y</kbd></span></div>
       <div class="ctl-r"><span class="act">Pause<small>then R to start over</small></span><span class="keys"><kbd>P</kbd><kbd>Esc</kbd></span><span class="keys"><kbd>Start</kbd></span></div>
+      <div class="ctl-r"><span class="act">Level 3 flight<small>in space</small></span><span class="keys" style="grid-column:span 2">A/D turn · W/S climb &amp; dive · Space loop · Q/E 360 spin · grabs score while held</span></div>
       <div class="ctl-r"><span class="act">Power-ups<small>ride through to collect</small></span><span class="keys" style="grid-column:span 2">🚀 jetpack (hold Jump to fly) · 🥾 gravity boots · 🔥 thrusters to 400 km/h</span></div>
       <div class="ctl-r"><span class="act">Camera<small>4 views</small></span><span class="keys"><kbd>C</kbd> or 🎥 button</span><span class="keys"><kbd>R3</kbd> stick click</span></div>
       <div class="ctl-r"><span class="act">Music · sound FX<small>on / off</small></span><span class="keys"><kbd>N</kbd><kbd>M</kbd></span><span class="keys"><kbd>Back</kbd></span></div>
@@ -285,7 +287,8 @@ const SETTINGS_DEF = { difficulty: 'normal', gravity: 100, invincible: 0, poweru
 let settings = { ...SETTINGS_DEF };
 try { Object.assign(settings, JSON.parse(localStorage.getItem('violetSlopesSettings') || '{}')); } catch (e) {}
 const slower = () => settings.difficulty === 'slower';
-let LEVEL = 1; try { LEVEL = +localStorage.getItem('violetSlopesLevel') === 2 ? 2 : 1; } catch (e) {}
+let LEVEL = 1; try { const v = +localStorage.getItem('violetSlopesLevel'); LEVEL = v === 2 || v === 3 ? v : 1; } catch (e) {}
+const SPACE_L = 24000; // level 3 flight length
 const launchKmh = () => slower() ? 750 : 1500; // level 2: escape velocity
 let G = 24, time = 0; // time is declared early: the ocean surface depends on it from the very first frame
 const applyGravity = () => { G = 24 * settings.gravity / 100 * (slower() ? 0.85 : 1) * (LEVEL === 2 ? 1.5 : 1); };
@@ -365,6 +368,7 @@ function oceanH(x, z) {
 const trackHeading = z => Math.atan((cxAt(z - 1) - cxAt(z + 1)) / 2);
 function baseH(x, z) {
   if (LEVEL === 2) return oceanH(x, z);
+  if (LEVEL === 3) return -1e4; // no ground in space
   const s = -z, u = x - cxAt(z);
   const b = 0.55 * Math.sin(u * 0.07 + z * 0.045) * Math.sin(z * 0.027)
           + 0.35 * Math.sin(z * 0.09 + u * 0.05)
@@ -385,6 +389,7 @@ const stageCapKmh = i => slower() ? Math.min(STAGE_CAPS[i], 150) : STAGE_CAPS[i]
 const straightKmh = () => slower() ? 600 : STRAIGHT_KMH;
 function speedCap(s) {
   if (LEVEL === 2) return launchKmh() * 1.002 / 3.6;
+  if (LEVEL === 3) { const f = clamp(s / SPACE_L, 0, 1); return (slower() ? lerp(80, 300, f) : lerp(120, 600, f)) / 3.6; }
   if (s > STRAIGHT_S) return lerp(stageCapKmh(4), straightKmh(), clamp((s - STRAIGHT_S) / 1900, 0, 1)) / 3.6;
   const f = clamp(s / COURSE_L, 0, 0.9999), i = Math.floor(f * 5);
   if (i === 0) return stageCapKmh(0) / 3.6;
@@ -393,7 +398,7 @@ function speedCap(s) {
 }
 const BOOST_OVER = 25; // m/s (+90 km/h) the Violet Flame boost may exceed the stage limit
 const THRUST_V = 400 / 3.6;
-const capNow = () => Math.max(speedCap(-P.z) + (boostT > 0 ? BOOST_OVER : 0), puOn('thrust') ? THRUST_V : 0);
+const capNow = () => Math.max(speedCap(-P.z) + (boostT > 0 ? BOOST_OVER : 0), puOn('thrust') ? (LEVEL === 3 ? speedCap(-P.z) + 200 / 3.6 : THRUST_V) : 0);
 function nearDrop(s) { for (const q of sections) if (q.type === 'drop' && s > q.s0 - 25 && s < q.s1 + 110) return true; return false; }
 function sectionTypeAt(s) { for (const q of sections) if (s >= q.s0 && s < q.s1) return q.type; return null; }
 const ramps = [], rails = [], hoops = [], orbs = [], pads = [], obstacles = [], powerups = [];
@@ -706,8 +711,35 @@ function spawnOceanSegment(z0) {
   else if (r < 0.55) { const hx = ax + srand(-25, 25), hz = z0 - srand(10, 45); makeHoop(hx, A * 1.45 + oceanBig(hz) + srand(5, 12), hz, 4.2, true, 0); }
   if (settings.powerups && segIndex > 6 && rng() < 0.22) { const kinds = ['thrust', 'thrust', 'thrust', 'jet']; const px = ax + srand(-25, 25), pz = z0 - srand(10, 45); makePowerup(kinds[Math.floor(rng() * 4)], px, 0, pz); }
 }
+const asteroids = [];
+function addAsteroid(x, y, z, sz) {
+  if (!settings.rocks) return;
+  const i = rockCur; rockCur = (rockCur + 1) % ROCK_CAP;
+  tmpM.compose(tmpV.set(x, y, z), tmpQ.setFromEuler(new THREE.Euler(rand(0, 3), rand(0, 3), rand(0, 3))), tmpS.set(sz * rand(0.8, 1.3), sz * rand(0.7, 1.1), sz * rand(0.8, 1.2)));
+  rocks.setMatrixAt(i, tmpM); rocks.instanceMatrix.needsUpdate = true;
+  asteroids.push({ x, y, z, r: sz * 1.05, idx: i, dead: false });
+}
+function spawnSpaceSegment(z0) {
+  segIndex++;
+  if (segIndex < 3) return;
+  const d = clamp(-z0 / SPACE_L, 0, 1);
+  if (-z0 > SPACE_L - 300) return;
+  // asteroid field gets denser the further out you fly
+  const n = Math.floor(srand(1, 3 + 7 * d));
+  for (let i = 0; i < n; i++) addAsteroid(srand(-60, 60), srand(-30, 30), z0 - srand(0, 55), srand(1.5, 4 + 5 * d));
+  const r = rng();
+  if (r < 0.35) { // a weaving line of star gates
+    const x0 = srand(-30, 30), y0 = srand(-15, 15), ph = srand(0, 6);
+    for (let i = 0; i < 3; i++) makeHoop(x0 + Math.sin(ph + i * 0.9) * 8, y0 + Math.cos(ph + i * 0.7) * 6, z0 - 8 - i * 16, 4.2, false, 0);
+  } else if (r < 0.7) {
+    const x0 = srand(-35, 35), y0 = srand(-18, 18), ph = srand(0, 6);
+    for (let i = 0; i < 8; i++) makeOrb(x0 + Math.sin(ph + i * 0.5) * 6, y0 + Math.cos(ph + i * 0.4) * 4, z0 - 4 - i * 6);
+  }
+  if (settings.powerups && segIndex > 6 && rng() < 0.1) makePowerup('thrust', srand(-30, 30), srand(-15, 15), z0 - srand(10, 45));
+}
 function spawnSegment(z0) {
   if (LEVEL === 2) return spawnOceanSegment(z0);
+  if (LEVEL === 3) return spawnSpaceSegment(z0);
   segIndex++;
   const SEG = 55, s0 = -z0, d = clamp(s0 / COURSE_L, 0, 1);
   const cx = z => cxAt(z), deco = s0 < STRAIGHT_S - 60;
@@ -801,10 +833,11 @@ function cleanup(pz) {
   for (let i = pads.length - 1; i >= 0; i--) if (pads[i].z - pads[i].len > lim) { killObj(pads[i].mesh); pads.splice(i, 1); }
   for (let i = obstacles.length - 1; i >= 0; i--) if (obstacles[i].z > lim) obstacles.splice(i, 1);
   for (let i = powerups.length - 1; i >= 0; i--) if (powerups[i].z > lim) { killObj(powerups[i].mesh); powerups.splice(i, 1); }
+  for (let i = asteroids.length - 1; i >= 0; i--) if (asteroids[i].z > lim) asteroids.splice(i, 1);
 }
 function clearCourse() {
   for (const arr of [ramps, rails, hoops, orbs, pads, powerups]) { for (const o of arr) killObj(o.mesh); arr.length = 0; }
-  obstacles.length = 0;
+  obstacles.length = 0; asteroids.length = 0;
   for (const [m, cap] of [[trees, TREE_CAP], [crystals, CRYS_CAP], [rocks, ROCK_CAP]]) { for (let i = 0; i < cap; i++) m.setMatrixAt(i, ZERO_M); m.instanceMatrix.needsUpdate = true; }
   treeCur = crysCur = rockCur = 0;
 }
@@ -824,7 +857,7 @@ function applyContentFilters() {
     const o = obstacles[i];
     if ((o.kind === 'rock' && !settings.rocks) || (o.kind === 'tree' && !settings.trees)) { o.mesh.setMatrixAt(o.idx, ZERO_M); o.mesh.instanceMatrix.needsUpdate = true; obstacles.splice(i, 1); }
   }
-  if (!settings.rocks) { for (let i = 0; i < ROCK_CAP; i++) rocks.setMatrixAt(i, ZERO_M); rocks.instanceMatrix.needsUpdate = true; }
+  if (!settings.rocks) { for (let i = 0; i < ROCK_CAP; i++) rocks.setMatrixAt(i, ZERO_M); rocks.instanceMatrix.needsUpdate = true; asteroids.length = 0; }
   if (!settings.powerups) { for (const q of powerups) killObj(q.mesh); powerups.length = 0; }
   if (!settings.ramps) {
     for (let i = ramps.length - 1; i >= 0; i--) {
@@ -1309,9 +1342,9 @@ function updateHUD() {
   elSpeed.textContent = Math.round(sp * 3.6);
   elLimit.textContent = (boostT > 0 ? '✦ ' : '') + Math.round(capNow() * 3.6 / 5) * 5;
   elLimit.parentElement.style.color = boostT > 0 ? '#ffd36a' : '';
-  elDist.textContent = LEVEL === 2 ? (Math.max(0, -P.z) / 1000).toFixed(1) : fmt(Math.max(0, COURSE_L + P.z));
+  elDist.textContent = LEVEL === 2 ? (Math.max(0, -P.z) / 1000).toFixed(1) : LEVEL === 3 ? (Math.max(0, SPACE_L + P.z) / 1000).toFixed(1) : fmt(Math.max(0, COURSE_L + P.z));
   elTime.textContent = fmtTime(runTime);
-  elProg.style.width = (LEVEL === 2 ? clamp(topSpeed / launchKmh(), 0, 1) : clamp(-P.z / COURSE_L, 0, 1)) * 100 + '%';
+  elProg.style.width = (LEVEL === 2 ? clamp(topSpeed / launchKmh(), 0, 1) : clamp(-P.z / (LEVEL === 3 ? SPACE_L : COURSE_L), 0, 1)) * 100 + '%';
   const active = chainPoints > 0 || chainCount > 0;
   elChain.style.opacity = active ? 1 : 0;
   if (active) {
@@ -1452,6 +1485,69 @@ function startGrind(r) {
   const sp = Math.max(18, Math.hypot(P.vx, P.vz)); P.vx = r.fx * sp; P.vz = r.fz * sp;
   event(200, ['Boardslide', 'Violet 50-50', 'Lipslide', 'Flame Grind'][Math.random() * 4 | 0], true);
   noise(0.2, 2500, 2, 0.2, 'bandpass');
+}
+// level 3: free flight — A/D turn, W/S climb/dive, Space loop, Q/E 360 spin, grabs score while held
+function updateFly(dt, steerIn, up, down) {
+  const sp0 = Math.hypot(P.vx, P.vz);
+  P.grounded = false;
+  if (P.state === 'crash') {
+    P.crashT -= dt; P.tumble += dt * 9;
+    const k = Math.exp(-1.2 * dt); P.vx *= k; P.vz *= k; P.vy *= k;
+    P.x += P.vx * dt; P.y += P.vy * dt; P.z += P.vz * dt;
+    if (P.crashT <= 0) {
+      if (lives <= 0 && !infiniteLives) { P.state = 'out'; gameOver(); return; }
+      const sp = Math.max(25, sp0); P.state = 'ride'; P.heading = 0; P.vx = 0; P.vz = -sp; P.vy = 0; P.spin = 0; P.flip = 0; P.invuln = 1.6; P.tumble = 0; P.trick = null;
+    }
+    return;
+  }
+  // speed: cruise toward the current limit
+  const cap = capNow();
+  let sp = sp0 < cap ? Math.min(cap, sp0 + (10 + (boostT > 0 ? 25 : 0) + (puOn('thrust') ? 25 : 0)) * dt) : Math.max(cap, sp0 - 14 * dt);
+  sp = Math.max(20, sp);
+  // steering
+  const tightDir = (key('carveR') ? 1 : 0) - (key('carveL') ? 1 : 0);
+  P.steer = lerp(P.steer, steerIn, ease(8, dt));
+  P.heading += P.steer * 1.7 * dt;
+  if (steerIn === 0) P.heading = lerp(P.heading, 0, ease(0.6, dt));
+  P.heading = clamp(P.heading, -1.2, 1.2);
+  P.vx = Math.sin(P.heading) * sp; P.vz = -Math.cos(P.heading) * sp;
+  const climb = (up ? 1 : 0) - (down ? 1 : 0);
+  P.vy = lerp(P.vy, climb * (18 + sp * 0.12), ease(4, dt));
+  if (P.y > 34) P.vy = Math.min(P.vy, (34 - P.y) * 2); if (P.y < -34) P.vy = Math.max(P.vy, (-34 - P.y) * 2);
+  P.x += P.vx * dt; P.y += P.vy * dt; P.z += P.vz * dt;
+  if (Math.abs(P.x) > 70) { P.heading = lerp(P.heading, -Math.sign(P.x) * 0.6, ease(3, dt)); }
+  P.x = clamp(P.x, -85, 85);
+  // tricks complete in the air (there is nothing to land on)
+  if (!P.trick) {
+    if (pressed('jump')) P.trick = { type: 'loop', t: 0, dur: 0.9, dir: 1 };
+    else if (tightDir) P.trick = { type: 'spin', t: 0, dur: 0.75, dir: tightDir };
+  }
+  if (P.trick) {
+    const q = P.trick; q.t += dt; const u = clamp(q.t / q.dur, 0, 1), e2 = u * u * (3 - 2 * u);
+    if (q.type === 'loop') P.flip = q.dir * TAU * e2; else P.spin = -q.dir * TAU * e2;
+    if (u >= 1) {
+      P.flip = 0; P.spin = 0; P.trick = null;
+      const g = grabKey();
+      event(q.type === 'loop' ? 500 : 320, (q.type === 'loop' ? 'Loop-the-Loop' : '360 Spin') + (g ? ' ' + g : ''), true);
+      burst(P.x, P.y + 0.8, P.z, 24, firePal, 7, 0.6, 2);
+    }
+  }
+  const gk = grabKey();
+  if (gk) { P.grab = gk; P.grabTime += dt; chainPoints += 120 * dt * (boostT > 0 ? 2 : 1); groundT = 0; }
+  else { if (P.grab && P.grabTime > 0.6) event(P.grabTime * 120, P.grab + ' Glide', true); P.grab = null; P.grabTime = 0; }
+  // asteroids (swept along this frame's path)
+  if (P.invuln <= 0 || invincible()) {
+    const cy = P.y + 0.9, px0 = P.x - P.vx * dt, py0 = cy - P.vy * dt, pz0 = P.z - P.vz * dt;
+    for (const a of asteroids) {
+      if (a.dead || Math.abs(a.z - P.z) > a.r + Math.abs(P.vz * dt) + 2) continue;
+      const sx = P.x - px0, sy = cy - py0, sz = P.z - pz0, L2 = sx * sx + sy * sy + sz * sz;
+      const tt = L2 > 0 ? clamp(((a.x - px0) * sx + (a.y - py0) * sy + (a.z - pz0) * sz) / L2, 0, 1) : 1;
+      if (Math.hypot(px0 + sx * tt - a.x, py0 + sy * tt - a.y, pz0 + sz * tt - a.z) < a.r + 0.7) {
+        if (invincible()) { a.dead = true; rocks.setMatrixAt(a.idx, ZERO_M); rocks.instanceMatrix.needsUpdate = true; if (boostT > 0) event(250, 'Asteroid Transmuted', true); burst(a.x, a.y, a.z, 60, PAL_CRASH, 10, 1, 0); }
+        else { P.trick = null; crash('Asteroid!'); P.vy = rand(-4, 4); return; }
+      }
+    }
+  }
 }
 function updateGrind(dt) {
   const r = P.grind;
@@ -1645,11 +1741,12 @@ function updateRiderVisual(dt, steerIn, up) {
     tTilt = Math.atan((groundH(P.x + fx, P.z + fz) - groundH(P.x - fx, P.z - fz)) / 2);
     tRoll = Math.atan((groundH(P.x + rx * 0.5, P.z + rz * 0.5) - groundH(P.x - rx * 0.5, P.z - rz * 0.5)) / 1);
   } else if (P.grind) tTilt = Math.atan(-SLOPE) * Math.cos(P.grindOff + P.spin);
+  else if (LEVEL === 3 && P.state === 'ride') { tTilt = Math.atan2(P.vy, Math.hypot(P.vx, P.vz) || 1) * 1.5; tRoll = -P.steer * 0.25; }
   P.tilt = lerp(P.tilt, tTilt, ease(P.grounded ? 14 : 4, dt));
   P.roll = lerp(P.roll, tRoll, ease(P.grounded ? 14 : 4, dt));
   R.tilt.rotation.set(P.tilt, 0, P.roll);
   R.flipG.rotation.x = P.state === 'crash' ? P.tumble : -P.flip;
-  const leanT = P.grounded && P.state === 'ride' ? -P.steer * (P.tight ? 0.72 : 0.38) * (P.switch ? -1 : 1) : 0;
+  const leanT = LEVEL === 3 && P.state === 'ride' ? -P.steer * 0.6 : P.grounded && P.state === 'ride' ? -P.steer * (P.tight ? 0.72 : 0.38) * (P.switch ? -1 : 1) : 0;
   R.lean.rotation.z = lerp(R.lean.rotation.z, leanT, ease(10, dt));
   // pose
   // grab pose: knees tuck, board comes up, one hand reaches the edge, the other arm flies out for style
@@ -1777,7 +1874,7 @@ function updateWorld(dt) {
   while (nextSeg > P.z - (-P.z > STRAIGHT_S - 600 ? 1000 : 460)) { spawnSegment(nextSeg); nextSeg -= 55; }
   finish.userData.ring.rotation.z += dt * 0.6;
   cleanup(P.z);
-  if (LEVEL === 2) updateOcean(); else updateTerrain(P.z);
+  if (LEVEL === 2) updateOcean(); else if (LEVEL === 1) updateTerrain(P.z);
   for (const h of hoops) {
     h.spin.rotation.z += dt * (h.big ? 1.2 : 0.8);
     if (h.passed && h.fade < 1) { h.fade = Math.min(1, h.fade + dt * 1.2); h.mesh.scale.setScalar(1 + h.fade * 0.7); h.mats[0].opacity = h.mats[1].opacity = 1 - h.fade; if (h.fade >= 1) h.mesh.visible = false; }
@@ -1807,7 +1904,16 @@ function updateAudio() {
 
 // ---------------------------------------------------------------- stages, finish, restart
 const SEA_TIERS = [['The Swell', 0], ['Big Water', 0.3], ['Mountain Seas', 0.55], ['Tsunami Run', 0.8], ['Escape Velocity', 0.95]];
+const SPACE_TIERS = [['Low Orbit', 0], ['The Asteroid Belt', 0.2], ['Nebula Drift', 0.4], ['The Starfield', 0.6], ['The Great Central Sun', 0.8]];
 function updateProgress(dt) {
+  if (LEVEL === 3) {
+    if (!finished) runTime += dt;
+    const s = -P.z;
+    let st = 0; SPACE_TIERS.forEach((q, i) => { if (s / SPACE_L >= q[1]) st = i; });
+    if (st > stageIdx) { stageIdx = st; elStage.textContent = SPACE_TIERS[st][0]; popup(SPACE_TIERS[st][0], 'tier', '#d9b8ff'); popup('Top speed ' + Math.round(speedCap(s + 1) * 3.6 / 10) * 10 + ' km/h', 'minor', '#ffd36a'); }
+    if (!finished && s >= SPACE_L) { popup('INTO THE GREAT CENTRAL SUN', 'tier', '#ffe9a8'); startAscension(); }
+    return;
+  }
   if (LEVEL === 2) {
     if (!finished) runTime += dt;
     const kmh = Math.hypot(P.vx, P.vz) * 3.6, L = launchKmh();
@@ -1902,13 +2008,13 @@ function showResults(kind) {
   try { localStorage.setItem('violetSlopesBest', String(best)); localStorage.setItem('violetSlopesBestTime', String(bestTime)); } catch (e) {}
   $('win').classList.remove('show');
   $('resTitle').textContent = won ? 'YOU WIN' : 'GAME OVER';
-  $('resSub').textContent = won ? (LEVEL === 2 ? 'You surfed all the way into the sun' : 'You rode the Violet Flame into the sun') : (LEVEL === 2 ? 'Out of lives — the sea awaits your return' : 'Out of lives — the mountain awaits your return');
-  $('nextBtn').style.display = won && LEVEL === 1 ? '' : 'none';
+  $('resSub').textContent = won ? ['', 'You rode the Violet Flame into the sun', 'You surfed all the way into the sun', 'You flew into the Great Central Sun'][LEVEL] : 'Out of lives — the ' + ['', 'mountain', 'sea', 'stars'][LEVEL] + ' await' + (LEVEL === 1 ? 's' : '') + ' your return';
+  $('nextBtn').style.display = won && LEVEL < 3 ? '' : 'none'; $('nextBtn').textContent = 'LEVEL ' + (LEVEL + 1) + ' →';
   const cell = (l, v, extra = '') => `<div><span class="lbl">${l}</span><b>${v}</b>${extra}</div>`;
   const nb = '<span class="lbl" style="color:#ffd36a">New best</span>';
   $('stats').innerHTML = cell('Score', fmt(score), newBestScore ? nb : '')
     + (LEVEL === 2 ? cell(won ? 'Time' : 'Top speed', won ? fmtTime(runTime) : fmt(topSpeed) + ' km/h', newBestTime ? nb : '')
-                   : cell(won ? 'Time' : 'Distance', won ? fmtTime(runTime) : fmt(clamp(-P.z, 0, COURSE_L)) + ' m', newBestTime ? nb : ''))
+                   : cell(won ? 'Time' : 'Distance', won ? fmtTime(runTime) : fmt(clamp(-P.z, 0, LEVEL === 3 ? SPACE_L : COURSE_L)) + ' m', newBestTime ? nb : ''))
     + cell(won ? 'Ascension bonus' : 'Time', won ? '+' + fmt(finishBonus) : fmtTime(runTime))
     + cell('Biggest combo', fmt(stats.bestCombo)) + cell('Combo moves', fmt(stats.tricks)) + cell('Lives left', infiniteLives ? '∞' : lives + ' / ' + MAX_LIVES)
     + cell('Best score', fmt(best)) + cell('Best time', bestTime ? fmtTime(bestTime) : '—') + cell('Wipeouts', fmt(stats.crashes));
@@ -1916,27 +2022,30 @@ function showResults(kind) {
   $('results').classList.remove('hidden'); mode = 'results';
 }
 function applyLevel() {
-  const L2 = LEVEL === 2;
+  const L2 = LEVEL === 2, L3 = LEVEL === 3;
   applyGravity();
-  terrain.visible = !L2; ocean.visible = L2; finish.visible = !L2; snow.visible = !L2;
-  for (const m of celestial.userData.mountains) m.visible = !L2;
+  terrain.visible = LEVEL === 1; ocean.visible = L2; finish.visible = LEVEL === 1; snow.visible = LEVEL === 1;
+  for (const m of celestial.userData.mountains) m.visible = LEVEL === 1;
   if (L2) { HORIZON.setRGB(0.5, 0.72, 0.88); skyMat.uniforms.uMid.value.setRGB(0.16, 0.4, 0.75); skyMat.uniforms.uTop.value.setRGB(0.03, 0.12, 0.4); skyMat.uniforms.uAur.value = 0;
             hemi.color.set(0xcfe8ff); hemi.groundColor.set(0x0a3050); hemi.intensity = 1.6; moon.color.set(0xfff0d8); moon.intensity = 2.3; }
   else { HORIZON.setRGB(0.26, 0.075, 0.36); skyMat.uniforms.uMid.value.setRGB(0.12, 0.03, 0.26); skyMat.uniforms.uTop.value.setRGB(0.012, 0.004, 0.04); skyMat.uniforms.uAur.value = 1;
          hemi.color.set(0xa88cff); hemi.groundColor.set(0x2a0f40); hemi.intensity = 1.25; moon.color.set(0xd2c2ff); moon.intensity = 1.3; }
-  scene.fog.color.copy(HORIZON); scene.fog.near = 80; scene.fog.far = 430;
+  if (L3) { HORIZON.setRGB(0.07, 0.02, 0.16); skyMat.uniforms.uMid.value.setRGB(0.04, 0.01, 0.1); skyMat.uniforms.uTop.value.setRGB(0.0, 0.0, 0.02); skyMat.uniforms.uAur.value = 1.4;
+            hemi.color.set(0x9f86ff); hemi.groundColor.set(0x1a0830); hemi.intensity = 1.1; moon.color.set(0xffe6c8); moon.intensity = 1.6; }
+  scene.fog.color.copy(HORIZON); scene.fog.near = L3 ? 200 : 80; scene.fog.far = L3 ? 900 : 430;
   skyMat.uniforms.uSpace.value = 0; celestial.userData.stars.material.opacity = L2 ? 0 : 1;
-  $('distLbl').textContent = L2 ? 'km surfed' : 'm to the finish';
+  $('distLbl').textContent = L2 ? 'km surfed' : L3 ? 'km to the Great Central Sun' : 'm to the finish';
   $('limitLbl').textContent = L2 ? 'escape velocity' : 'limit';
-  $('whiteout').style.background = L2 ? '#000' : '#fff6e0';
+  $('whiteout').style.background = '#fff6e0';
   document.querySelectorAll('.seg[data-set=level] button').forEach(b => b.classList.toggle('sel', +b.dataset.v === LEVEL));
 }
 function resetRun() {
   applyLevel(); topSpeed = 0;
+  if (LEVEL === 3) { /* P is re-created below; nothing to do here */ }
   clearCourse(); pu = null; straightTold = false; syncPowerupHud(true); lives = MAX_LIVES; celestialFrozen = false; asc = null; R.root.visible = true;
   $('win').classList.remove('show'); $('whiteout').style.opacity = 0; rng = mulberry32(SEED); sections.forEach(q => q.told = false);
   nextSeg = -40; segIndex = 0; laneBlock = [0, 0, 0]; terrCZ = null;
-  Object.assign(P, freshP()); P.y = baseH(0, 0);
+  Object.assign(P, freshP()); P.y = LEVEL === 3 ? 0 : baseH(0, 0); if (LEVEL === 3) { P.vz = -25; P.vy = 0; P.grounded = false; }
   score = 0; chainCount = 0; chainPoints = 0; chainTimer = 0; meter = 0; boostT = 0; lastTier = -1;
   runTime = 0; finished = false; stageIdx = -1; finishBonus = 0; meterFullShown = false;
   stats = { tricks: 0, crashes: 0, bestCombo: 0 };
@@ -1949,12 +2058,18 @@ function rideAgain() {
   $('results').classList.add('hidden');
   resetRun(); mode = 'play'; startZ = P.z;
   restartMusic();
-  popup(LEVEL === 2 ? 'Surf!' : 'Descend', 'tier', LEVEL === 2 ? '#8fe3ff' : '#e7c6ff');
+  popup(['', 'Descend', 'Surf!', 'Fly!'][LEVEL], 'tier', ['', '#e7c6ff', '#8fe3ff', '#d9b8ff'][LEVEL]);
 }
 $('againBtn').addEventListener('click', rideAgain);
 function setLevel(n) { LEVEL = n; try { localStorage.setItem('violetSlopesLevel', String(n)); } catch (e) {} }
-$('nextBtn').addEventListener('click', () => { setLevel(2); rideAgain(); });
-document.querySelectorAll('.seg[data-set=level] button').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); if (mode !== 'menu') return; setLevel(+b.dataset.v); resetRun(); }));
+$('nextBtn').addEventListener('click', () => { setLevel(Math.min(3, LEVEL + 1)); rideAgain(); });
+function chooseLevel(n) {
+  if (n === LEVEL) return;
+  setLevel(n);
+  if (mode === 'menu') resetRun();
+  else if (mode === 'paused') { showSettings('pause', false); restartFromPause(); }
+}
+document.querySelectorAll('.levelSeg button').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); chooseLevel(+b.dataset.v); }));
 $('camBtn').addEventListener('click', e => { e.currentTarget.blur(); cycleCamera(); });
 document.querySelectorAll('.btnMusic').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); initAudio(); initMusic(); toggleMusic(); }));
 document.querySelectorAll('.btnSfx').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); initAudio(); toggleSfx(); }));
@@ -1980,6 +2095,7 @@ function restartFromPause() {
 $('restartBtn').addEventListener('click', restartFromPause);
 // ---- settings screen (start screen + pause screen share one design)
 const SET_ROWS = [
+  ['level', 'Level', 'switching mid-run starts a fresh run', [[1, 'Violet Slopes'], [2, 'Ocean Ascent'], [3, 'Cosmic Flight']]],
   ['difficulty', 'Difficulty', 'Slower: top speed ~150 km/h in every stage, a little less gravity', [['normal', 'Normal'], ['slower', 'Slower']]],
   ['gravity', 'Gravity', 'how heavy the world feels', null],
   ['invincible', 'Invincible rider', 'no crashes, no lives lost', [[0, 'Off'], [1, 'On']]],
@@ -1996,7 +2112,7 @@ function settingsHTML() {
 }
 document.querySelectorAll('.setSlot').forEach(el => { el.innerHTML = settingsHTML(); });
 function syncSettingsUI() {
-  document.querySelectorAll('.settings .seg').forEach(seg => { const k = seg.dataset.set; seg.querySelectorAll('button').forEach(b => b.classList.toggle('sel', String(settings[k]) === b.dataset.v)); });
+  document.querySelectorAll('.settings .seg').forEach(seg => { const k = seg.dataset.set; if (k === 'level') return; seg.querySelectorAll('button').forEach(b => b.classList.toggle('sel', String(settings[k]) === b.dataset.v)); });
   document.querySelectorAll('input[data-set=gravity]').forEach(r => { r.value = settings.gravity; });
   document.querySelectorAll('.gravVal').forEach(b => { b.textContent = settings.gravity + '%'; });
 }
@@ -2005,7 +2121,7 @@ function setSetting(k, v) {
   try { localStorage.setItem('violetSlopesSettings', JSON.stringify(settings)); } catch (e) {}
   applyGravity(); applyContentFilters(); syncSettingsUI();
 }
-document.querySelectorAll('.settings .seg button').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); setSetting(b.parentElement.dataset.set, b.dataset.v); }));
+document.querySelectorAll('.settings .seg button').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); if (b.parentElement.dataset.set === 'level') { chooseLevel(+b.dataset.v); return; } setSetting(b.parentElement.dataset.set, b.dataset.v); }));
 document.querySelectorAll('input[data-set=gravity]').forEach(r => { r.addEventListener('input', () => setSetting('gravity', r.value)); r.addEventListener('change', () => r.blur()); });
 syncSettingsUI();
 function showSettings(overlayId, on) {
@@ -2041,7 +2157,8 @@ function update(dt) {
   if (P.state === 'ascend' || P.state === 'won' || P.state === 'out') { if (P.state === 'ascend') updateAscend(dt); updateRiderVisual(dt, 0, false); if (P.state === 'ascend') emitFire(dt); return; }
 
   const prevZ = P.z, prevX = P.x;
-  if (P.state === 'crash') updateCrash(dt);
+  if (LEVEL === 3 && (P.state === 'crash' || P.state === 'ride')) updateFly(dt, steerIn, up, down);
+  else if (P.state === 'crash') updateCrash(dt);
   else if (P.state === 'ascend') { updateAscend(dt); updateRiderVisual(dt, 0, false); emitFire(dt); return; }
   else if (P.state === 'out' || P.state === 'won') { updateRiderVisual(dt, 0, false); return; }
   else if (P.grind) updateGrind(dt);
@@ -2051,7 +2168,7 @@ function update(dt) {
 
   // bank the combo after 3 continuous seconds on the snow; scoring on the ground doesn't reset this,
   // only a real jump (more than a bump-hop), a grind or a crash does
-  if (P.state === 'ride' && !P.grind && (P.grounded || P.airTime < 0.25)) groundT += dt; else groundT = 0;
+  if (P.state === 'ride' && !P.grind && (LEVEL === 3 ? !P.trick && !P.grab : P.grounded || P.airTime < 0.25)) groundT += dt; else groundT = 0;
   if ((chainCount > 0 || chainPoints > 0) && groundT >= CHAIN_WIN) bankChain();
   updateRiderVisual(dt, steerIn, up);
   emitFire(dt);
@@ -2077,7 +2194,7 @@ function startGame() {
   $('menu').classList.add('hidden');
   mode = 'play'; startZ = P.z;
   P.vz = -14; camPos.set(P.x, P.y + 4, P.z + 10);
-  popup(LEVEL === 2 ? 'Surf!' : 'Descend', 'tier', LEVEL === 2 ? '#8fe3ff' : '#e7c6ff');
+  popup(['', 'Descend', 'Surf!', 'Fly!'][LEVEL], 'tier', ['', '#e7c6ff', '#8fe3ff', '#d9b8ff'][LEVEL]);
 }
 function togglePause() {
   if (mode === 'play') { mode = 'paused'; showPauseControls(false); $('pause').classList.remove('hidden'); if (actx) actx.suspend(); if (!useSynth) musicEl.pause(); }
