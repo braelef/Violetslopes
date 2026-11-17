@@ -119,6 +119,18 @@
   #puName{font-family:'Cinzel';font-weight:900;font-size:18px;letter-spacing:.14em;color:var(--puc);text-shadow:0 0 12px var(--puc)}
   #puWrap{width:200px;height:5px;margin:6px auto 0;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}
   #puFill{height:100%;width:100%;background:var(--puc);box-shadow:0 0 10px var(--puc)}
+  .settings{margin:16px auto 20px;text-align:left;background:rgba(20,4,40,.55);border:1px solid rgba(200,150,255,.22);border-radius:18px;padding:6px 18px;box-shadow:0 0 30px rgba(120,40,220,.25)}
+  .set-r{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-top:1px solid rgba(220,180,255,.1)}
+  .set-r:first-child{border-top:none}
+  .set-r .nm{font-weight:700;font-size:15px}
+  .set-r .nm small{display:block;font-weight:300;font-size:11.5px;opacity:.62;margin-top:2px}
+  .seg{display:inline-flex;border:1px solid rgba(220,170,255,.45);border-radius:18px;overflow:hidden;flex-shrink:0}
+  .seg button{font-family:'Outfit';font-weight:700;font-size:12.5px;letter-spacing:.06em;color:#fff;background:transparent;border:none;padding:7px 14px;cursor:pointer;opacity:.6}
+  .seg button.sel{background:linear-gradient(135deg,#6a12d8,#c040ff);opacity:1}
+  .grav{display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .grav input{width:150px;accent-color:#b44dff}
+  .grav b{min-width:44px;text-align:right;font-size:14px}
+  .setNote{font-size:11.5px;opacity:.6;text-align:center;margin:6px 0 18px}
   #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:20;background:#12051f;font-size:16px;padding:30px;text-align:center}
 </style>
 </head>
@@ -169,7 +181,7 @@
 </div>
 
 <div class="overlay" id="menu">
-  <div class="panel">
+  <div class="panel" id="menuMain">
     <h1>VIOLET SLOPES</h1>
     <div class="sub">Ride the Violet Flame of Transmutation</div>
     <div class="ctl">
@@ -188,9 +200,17 @@
     </div>
     <div class="tip">Chain tricks, hoops &amp; grinds to change the colour of your flame</div>
     <div class="tiers" id="tierLegend"></div>
-    <button class="go" id="startBtn">BEGIN DESCENT</button>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <button class="go" id="startBtn">BEGIN DESCENT</button>
+      <button class="go setOpen" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">⚙ SETTINGS</button>
+    </div>
     <div style="margin-top:14px"><div class="sndRow"><button class="sndBtn btnMusic"><i>🎵</i> Music <kbd>N</kbd></button><button class="sndBtn btnSfx"><i>🔊</i> Sound FX <kbd>M</kbd></button><button class="sndBtn btnLives"><i>✦</i> <span>Lives: 5</span></button></div></div>
     <div class="credit">Music: <i>The Blue Danube</i>, Op. 314 (Johann Strauss II) — Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 2024. Recording courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</div>
+  </div>
+  <div class="panel hidden setView" id="menuSet" style="margin:auto;padding:22px 18px;max-width:640px">
+    <h1 style="font-size:clamp(36px,5vw,56px)">SETTINGS</h1>
+    <div class="setSlot"></div>
+    <button class="go setBack">BACK</button>
   </div>
 </div>
 <div class="overlay hidden" id="results">
@@ -208,10 +228,16 @@
     <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
       <button class="go" id="resumeBtn">RESUME</button>
       <button class="go" id="ctlBtn" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">CONTROLS</button>
+      <button class="go setOpen" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">⚙ SETTINGS</button>
       <button class="go" id="restartBtn" style="background:linear-gradient(135deg,#3a0a6a,#6a2aa8);box-shadow:0 0 18px rgba(140,60,220,.5)">START OVER</button>
     </div>
     <div style="margin-top:18px"><div class="sndRow"><button class="sndBtn btnMusic"><i>🎵</i> Music <kbd>N</kbd></button><button class="sndBtn btnSfx"><i>🔊</i> Sound FX <kbd>M</kbd></button><button class="sndBtn btnLives"><i>✦</i> <span>Lives: 5</span></button></div></div>
     <div class="note">Controller: Start to resume · Y for controls · Back/Select to start over</div>
+  </div>
+  <div class="panel hidden setView" id="pauseSet" style="margin:auto;padding:22px 18px;max-width:640px">
+    <h1 style="font-size:clamp(36px,5vw,56px)">SETTINGS</h1>
+    <div class="setSlot"></div>
+    <button class="go setBack">BACK</button>
   </div>
   <div class="panel hidden" id="pauseCtl" style="margin:auto;padding:22px 18px;max-width:920px">
     <h1 style="font-size:clamp(36px,5vw,56px)">CONTROLS</h1>
@@ -249,7 +275,14 @@ const fmt = n => Math.round(n).toLocaleString('en-US');
 const ease = (rate, dt) => 1 - Math.exp(-rate * dt);
 
 // ---------------------------------------------------------------- constants
-const SLOPE = 0.32, G = 24, OLLIE = 12.5, RAMP_V = 32, CHAIN_WIN = 3.0, BOOST_DUR = 7;
+const SETTINGS_DEF = { difficulty: 'normal', gravity: 100, invincible: 0, powerups: 1, rocks: 1, ramps: 1, trees: 1 };
+let settings = { ...SETTINGS_DEF };
+try { Object.assign(settings, JSON.parse(localStorage.getItem('violetSlopesSettings') || '{}')); } catch (e) {}
+const slower = () => settings.difficulty === 'slower';
+let G = 24;
+const applyGravity = () => { G = 24 * settings.gravity / 100 * (slower() ? 0.85 : 1); };
+applyGravity();
+const SLOPE = 0.32, OLLIE = 12.5, RAMP_V = 32, CHAIN_WIN = 3.0, BOOST_DUR = 7;
 
 const TIERS = [
   { name: 'Violet Spark',   min: 1,  hex: ['#e7c6ff', '#9d4dff', '#3b0f78'] },
@@ -326,12 +359,14 @@ function finaleLimit(s) { let f = clamp((s - (COURSE_L - 520)) / 380, 0, 1); f =
 // top speed rises stage by stage (km/h), easing in over the first 400 m of each new stage
 const STAGE_CAPS = [120, 165, 210, 255, 300];
 const STRAIGHT_S = COURSE_L - 2600, STRAIGHT_KMH = 1200;
+const stageCapKmh = i => slower() ? Math.min(STAGE_CAPS[i], 150) : STAGE_CAPS[i];
+const straightKmh = () => slower() ? 600 : STRAIGHT_KMH;
 function speedCap(s) {
-  if (s > STRAIGHT_S) return lerp(STAGE_CAPS[4], STRAIGHT_KMH, clamp((s - STRAIGHT_S) / 1900, 0, 1)) / 3.6;
+  if (s > STRAIGHT_S) return lerp(stageCapKmh(4), straightKmh(), clamp((s - STRAIGHT_S) / 1900, 0, 1)) / 3.6;
   const f = clamp(s / COURSE_L, 0, 0.9999), i = Math.floor(f * 5);
-  if (i === 0) return STAGE_CAPS[0] / 3.6;
+  if (i === 0) return stageCapKmh(0) / 3.6;
   const into = s - i * COURSE_L / 5;
-  return lerp(STAGE_CAPS[i - 1], STAGE_CAPS[i], clamp(into / 400, 0, 1)) / 3.6;
+  return lerp(stageCapKmh(i - 1), stageCapKmh(i), clamp(into / 400, 0, 1)) / 3.6;
 }
 const BOOST_OVER = 25; // m/s (+90 km/h) the Violet Flame boost may exceed the stage limit
 const THRUST_V = 400 / 3.6;
@@ -496,6 +531,7 @@ for (let i = 0; i < ROCK_CAP; i++) rocks.setMatrixAt(i, ZERO_M);
 let rockCur = 0;
 
 function addTree(x, z, s, collide) {
+  if (collide && !settings.trees) return;
   const i = treeCur; treeCur = (treeCur + 1) % TREE_CAP;
   const y = baseH(x, z) - 0.2;
   tmpM.compose(tmpV.set(x, y, z), tmpQ.setFromAxisAngle(UP, rand(0, TAU)), tmpS.set(s, s * rand(0.9, 1.25), s));
@@ -509,6 +545,7 @@ function addCrystal(x, z, s, collide = false) {
   crystals.setMatrixAt(i, tmpM); crystals.instanceMatrix.needsUpdate = true;
 }
 function addRock(x, z, s, collide) {
+  if (!settings.rocks) return;
   const i = rockCur; rockCur = (rockCur + 1) % ROCK_CAP;
   const y = baseH(x, z);
   tmpM.compose(tmpV.set(x, y + s * 0.3, z), tmpQ.setFromEuler(new THREE.Euler(rand(0, 3), rand(0, 3), rand(0, 3))), tmpS.set(s * 1.3, s * 0.9, s * 1.1));
@@ -634,7 +671,7 @@ function spawnSegment(z0) {
     return;
   }
   if (segIndex === 1) { for (let i = 0; i < 6; i++) { const z = z0 - i * 6; makeOrb(cx(z) + Math.sin(i * 0.6) * 3, baseH(0, z) + 1.2, z); } return; }
-  if (segIndex === 2) { featureKicker(cx(z0 - 10), z0 - 10, 'big'); laneBlock = [0, 2, 0]; return; }
+  if (segIndex === 2) { if (settings.ramps) featureKicker(cx(z0 - 10), z0 - 10, 'big'); laneBlock = [0, 2, 0]; return; }
 
   const order = [0, 1, 2].sort(() => rng() - 0.5);
   const nFeat = rng() < 0.5 + 0.3 * d ? 2 : 1;
@@ -649,7 +686,7 @@ function spawnSegment(z0) {
     const x = cx(zs) + LANES[L] + srand(-2.5, 2.5), a = clamp(trackHeading(zs), -0.8, 0.8);
     const r = rng();
     if (kind === 'rollers' && r < 0.52) { const ph = srand(0, 3); for (let i = 0; i < 8; i++) { const oz = zs - i * 5.5, ox = cx(oz) + LANES[L] + Math.sin(ph + i * 0.55) * 3; makeOrb(ox, baseH(ox, oz) + 1.4, oz); } continue; }
-    if (r < 0.3) { featureKicker(x, zs, rng() < 0.45 + 0.3 * d ? 'big' : 'mid', a); laneBlock[L] = 2; }
+    if (r < 0.3) { const sz = rng() < 0.45 + 0.3 * d ? 'big' : 'mid'; if (settings.ramps) { featureKicker(x, zs, sz, a); laneBlock[L] = 2; } }
     else if (r < 0.5) { const len = srand(22, 38) + 20 * d; makeRail(x, zs, len, a); if (rng() < 0.5) for (let i = 0; i < 4; i++) { const al = 6 + i * 6, ox = x + Math.sin(a) * al, oz = zs - Math.cos(a) * al; makeOrb(ox, baseH(ox, oz) + 2.0, oz); } }
     else if (r < 0.64) { for (let i = 0; i < 3; i++) { const hz = zs - i * 15, hx = cx(hz) + LANES[L] + Math.sin(i * 1.3) * 3; makeHoop(hx, baseH(hx, hz) + 3.15, hz, 3.0, false, trackHeading(hz)); } }
     else if (r < 0.76 - 0.06 * d) { const ph = srand(0, 3); for (let i = 0; i < 8; i++) { const oz = zs - i * 5.5, ox = cx(oz) + LANES[L] + Math.sin(ph + i * 0.55) * 4; makeOrb(ox, baseH(ox, oz) + 1.2, oz); } }
@@ -681,7 +718,7 @@ function spawnSegment(z0) {
   }
   if (segIndex > 4 && rng() < 0.18) {
     const L = [0, 1, 2].find(l => !used.includes(l)) ?? 1, pz = z0 - srand(8, 40);
-    if (!nearDrop(-pz)) { const px = cx(pz) + LANES[L]; const kinds = s0 >= COURSE_L * 0.8 ? PU_KEYS.filter(k => k !== 'boots') : PU_KEYS; makePowerup(kinds[Math.floor(rng() * kinds.length)], px, baseH(px, pz) + 1.6, pz); }
+    if (!nearDrop(-pz) && settings.powerups) { const px = cx(pz) + LANES[L]; const kinds = s0 >= COURSE_L * 0.8 ? PU_KEYS.filter(k => k !== 'boots') : PU_KEYS; makePowerup(kinds[Math.floor(rng() * kinds.length)], px, baseH(px, pz) + 1.6, pz); }
   }
   laneBlock = laneBlock.map(v => Math.max(0, v - 1));
 }
@@ -725,8 +762,24 @@ const PU = {
 };
 const PU_KEYS = Object.keys(PU);
 let pu = null; // { type, t }
-const invincible = () => boostT > 0;
+const invincible = () => boostT > 0 || !!settings.invincible;
 const puOn = type => !!pu && pu.type === type;
+// turning content off mid-run clears it from the slope ahead
+function applyContentFilters() {
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    const o = obstacles[i];
+    if ((o.kind === 'rock' && !settings.rocks) || (o.kind === 'tree' && !settings.trees)) { o.mesh.setMatrixAt(o.idx, ZERO_M); o.mesh.instanceMatrix.needsUpdate = true; obstacles.splice(i, 1); }
+  }
+  if (!settings.rocks) { for (let i = 0; i < ROCK_CAP; i++) rocks.setMatrixAt(i, ZERO_M); rocks.instanceMatrix.needsUpdate = true; }
+  if (!settings.powerups) { for (const q of powerups) killObj(q.mesh); powerups.length = 0; }
+  if (!settings.ramps) {
+    for (let i = ramps.length - 1; i >= 0; i--) {
+      const r = ramps[i]; if (r.finale) continue;
+      if (r.hoop) for (let j = hoops.length - 1; j >= 0; j--) if (hoops[j].z === r.hoop.z && hoops[j].x === r.hoop.x) { killObj(hoops[j].mesh); hoops.splice(j, 1); }
+      killObj(r.mesh); ramps.splice(i, 1);
+    }
+  }
+}
 const finalStage = () => -P.z >= COURSE_L * 0.8;
 const bootsOn = () => puOn('boots') || (finalStage() && !puOn('jet') && P.state === 'ride');
 const puGeo = (() => {
@@ -1511,7 +1564,7 @@ function checkObjects(prevX, prevZ) {
     if (Math.hypot(cxp - o.x, czp - o.z) < o.r + 0.45 && P.y < o.top) {
       if (invincible()) {
         o.dead = true; o.mesh.setMatrixAt(o.idx, ZERO_M); o.mesh.instanceMatrix.needsUpdate = true;
-        event(250, { tree: 'Tree Transmuted', rock: 'Stone Transmuted', crystal: 'Crystal Transmuted' }[o.kind], true);
+        if (boostT > 0) event(250, { tree: 'Tree Transmuted', rock: 'Stone Transmuted', crystal: 'Crystal Transmuted' }[o.kind], true);
         burst(o.x, P.y + 2, o.z, 120, boostPal, 11, 1.2, 4); noise(0.4, 1200, 1, 0.25);
       } else if (P.invuln <= 0) { crash({ tree: 'Hugged a tree!', rock: 'Rocked!', crystal: 'Shattered on a crystal!' }[o.kind]); return; }
     }
@@ -1690,8 +1743,8 @@ function updateProgress(dt) {
   const s = -P.z;
   if (!finished) runTime += dt;
   let st = 0; STAGES.forEach((q, i) => { if (s / COURSE_L >= q.f) st = i; });
-  if (st !== stageIdx) { stageIdx = st; elStage.textContent = STAGES[st].name; popup('Stage ' + (st + 1) + ' · ' + STAGES[st].name, 'tier', '#e7c6ff'); popup('Top speed ' + STAGE_CAPS[st] + ' km/h', 'minor', '#ffd36a'); if (st === 4) popup('🥾 Gravity boots engaged for the descent', 'minor', '#7fb2ff'); }
-  if (stageIdx === 4 && !straightTold && s > STRAIGHT_S - 10) { straightTold = true; popup('Top speed ' + STRAIGHT_KMH + ' km/h', 'minor', '#ffd36a'); }
+  if (st !== stageIdx) { stageIdx = st; elStage.textContent = STAGES[st].name; popup('Stage ' + (st + 1) + ' · ' + STAGES[st].name, 'tier', '#e7c6ff'); popup('Top speed ' + stageCapKmh(st) + ' km/h', 'minor', '#ffd36a'); if (st === 4) popup('🥾 Gravity boots engaged for the descent', 'minor', '#7fb2ff'); }
+  if (stageIdx === 4 && !straightTold && s > STRAIGHT_S - 10) { straightTold = true; popup('Top speed ' + straightKmh() + ' km/h', 'minor', '#ffd36a'); }
   for (const q of sections) if (!q.told && s > q.s0 - 160 && s < q.s0) { q.told = true; popup(q.type === 'drop' ? '⚠ ' + q.name + ' ahead' : q.name, q.type === 'straight' ? 'tier' : 'minor', q.type === 'drop' ? '#ffb0d0' : '#e7c6ff'); }
   if (!finished && s >= RAMP_S + RAMP_LEN - 1.2) startAscension();
 }
@@ -1808,9 +1861,46 @@ function restartFromPause() {
   popup('Descend', 'tier', '#e7c6ff');
 }
 $('restartBtn').addEventListener('click', restartFromPause);
+// ---- settings screen (start screen + pause screen share one design)
+const SET_ROWS = [
+  ['difficulty', 'Difficulty', 'Slower: top speed ~150 km/h in every stage, a little less gravity', [['normal', 'Normal'], ['slower', 'Slower']]],
+  ['gravity', 'Gravity', 'how heavy the world feels', null],
+  ['invincible', 'Invincible rider', 'no crashes, no lives lost', [[0, 'Off'], [1, 'On']]],
+  ['powerups', 'Power-ups', 'jetpack, gravity boots, thrusters', [[0, 'Off'], [1, 'On']]],
+  ['rocks', 'Rocks', '', [[0, 'Off'], [1, 'On']]],
+  ['ramps', 'Ramps', 'kickers and their Sky Hoops (the final ramp always stays)', [[0, 'Off'], [1, 'On']]],
+  ['trees', 'Trees', 'trees you can hit (distant forest stays as scenery)', [[0, 'Off'], [1, 'On']]],
+];
+function settingsHTML() {
+  return '<div class="settings">' + SET_ROWS.map(([k, name, sub, opts]) => `<div class="set-r"><span class="nm">${name}${sub ? '<small>' + sub + '</small>' : ''}</span>` +
+    (opts ? `<div class="seg" data-set="${k}">${opts.map(([v, l]) => `<button data-v="${v}">${l}</button>`).join('')}</div>`
+          : `<div class="grav"><input type="range" min="50" max="150" step="5" data-set="gravity"><b class="gravVal"></b></div>`) + '</div>').join('') +
+    '</div><div class="setNote">Rocks, ramps, trees and power-ups switched on mid-run appear from the next stretch of slope.</div>';
+}
+document.querySelectorAll('.setSlot').forEach(el => { el.innerHTML = settingsHTML(); });
+function syncSettingsUI() {
+  document.querySelectorAll('.seg').forEach(seg => { const k = seg.dataset.set; seg.querySelectorAll('button').forEach(b => b.classList.toggle('sel', String(settings[k]) === b.dataset.v)); });
+  document.querySelectorAll('input[data-set=gravity]').forEach(r => { r.value = settings.gravity; });
+  document.querySelectorAll('.gravVal').forEach(b => { b.textContent = settings.gravity + '%'; });
+}
+function setSetting(k, v) {
+  settings[k] = k === 'difficulty' ? v : +v;
+  try { localStorage.setItem('violetSlopesSettings', JSON.stringify(settings)); } catch (e) {}
+  applyGravity(); applyContentFilters(); syncSettingsUI();
+}
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); setSetting(b.parentElement.dataset.set, b.dataset.v); }));
+document.querySelectorAll('input[data-set=gravity]').forEach(r => { r.addEventListener('input', () => setSetting('gravity', r.value)); r.addEventListener('change', () => r.blur()); });
+syncSettingsUI();
+function showSettings(overlayId, on) {
+  const main = overlayId === 'menu' ? 'menuMain' : 'pauseMain', set = overlayId === 'menu' ? 'menuSet' : 'pauseSet';
+  $(main).classList.toggle('hidden', on); $(set).classList.toggle('hidden', !on);
+  if (overlayId === 'pause') $('pauseCtl').classList.add('hidden');
+}
+document.querySelectorAll('.setOpen').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); showSettings(b.closest('.overlay').id, true); }));
+document.querySelectorAll('.setBack').forEach(b => b.addEventListener('click', e => { e.currentTarget.blur(); showSettings(b.closest('.overlay').id, false); }));
 // pause → controls view (reuses the start screen's controls table)
 $('ctlSlot').appendChild(document.querySelector('#menu .ctl').cloneNode(true));
-function showPauseControls(on) { $('pauseMain').classList.toggle('hidden', on); $('pauseCtl').classList.toggle('hidden', !on); }
+function showPauseControls(on) { $('pauseMain').classList.toggle('hidden', on); $('pauseCtl').classList.toggle('hidden', !on); $('pauseSet').classList.add('hidden'); }
 $('ctlBtn').addEventListener('click', e => { e.currentTarget.blur(); showPauseControls(true); });
 $('ctlBack').addEventListener('click', e => { e.currentTarget.blur(); showPauseControls(false); });
 

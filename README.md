@@ -41,6 +41,15 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 - **Lives.** You have five. Every wipeout costs one, and at zero you start over. Switch to infinite lives with the ✦ Lives button on the start or pause screen (no lives bonus at the finish).
 - **The ending.** The last 2.6 km is The Final Straight: long, steep and dead straight, with no obstacles, just orbs and surge pads. The speed limit climbs from 300 to 1,200 km/h, with a strong tailwind to get you there. It funnels into a giant ramp that launches you into the violet sun, and **YOU WIN**.
 
+## Settings
+
+Open **⚙ Settings** from the start screen or the pause screen. Your choices are saved.
+
+- **Difficulty:** Normal, or Slower. Slower caps every stage at 150 km/h (the final straight at 600 km/h) and makes gravity 15% lighter.
+- **Gravity:** a slider from 50% to 150%.
+- **Invincible rider:** no crashes and no lives lost.
+- **Power-ups / Rocks / Ramps / Trees:** each on or off. Ramps means the kickers and their Sky Hoops; the final ramp always stays. Trees means trees you can hit; the distant forest stays as scenery. Turning one off mid-run clears it from the slope ahead, and turning one back on brings it back from the next stretch.
+
 ## Credits
 
 - Game code: generated with Claude.
