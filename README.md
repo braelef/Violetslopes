@@ -45,10 +45,11 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 
 Pick it on the start screen, or press **LEVEL 2 →** after beating level 1.
 
-- **The ocean.** It's a deep-blue sea of huge moving swells that grow taller the further out you go.
-- **Surfing.** Riding down a wave face gives you more speed than climbing the next one takes away, and the swell keeps pushing you along. Your speed climbs steadily, taking roughly 4½–5 minutes to max out, sooner if you tuck and use the boost.
+- **The ocean.** It's a deep-blue sea of moving swells that grow taller the further out you go. From about 8 km out, giant unevenly spaced sets build to about 45 m tall. Gravity is 50% stronger at sea.
+- **Surfing.** Riding down a wave face gives you more speed than climbing the next one takes away, and the swell keeps pushing you along. The water holds your board through the crests, so you keep gaining on every face. A steady ride reaches escape velocity in about 3½ minutes, sooner with tuck, the boost and thrusters.
 - **Dipping under.** You sit slightly in the water, and hard landings plunge you below the surface with a splash before you bob back up.
 - **Speed tiers.** The bar at the top tracks your best speed through The Swell, Big Water, Mountain Seas, Tsunami Run and Escape Velocity.
+- **Power-ups at sea.** These are mostly Mega Thrusters, which give a +250 km/h burst on top of your speed, plus the occasional jetpack. There are no gravity boots at sea.
 - **The finish.** At **1,000 km/h** (500 on Slower) you launch into space. The sky drains to black and the stars come out, then **YOU WIN**.
 
 ## Settings
