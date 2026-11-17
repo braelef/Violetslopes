@@ -352,7 +352,7 @@ function sampleT(arr, s) { if (s <= 0) return arr[0]; if (s >= CN - 1) return ar
 function profH(s) { if (s <= 0) return -s * SLOPE; if (s >= CN - 1) return FhT[CN - 1] - 0.1 * (s - CN + 1); return sampleT(FhT, s); }
 const cxAt = z => LEVEL === 2 || -z <= 0 ? 0 : sampleT(cxT, -z);
 // level 2: big moving swells that grow taller the further out you surf
-const OC = { big: 45, a0: 3, a1: 18, grow: 35000, l1: 200, l2: 120, down: 1.2, up: 0.9, push: 0.8, tuck: 1.0, air: 0.4, thrust: 12, stick: 45, landGain: 0.8, landMax: 50 };
+const OC = { big: 45, a0: 3, a1: 18, grow: 35000, l1: 200, l2: 120, down: 1.2, up: 0.9, push: 0.8, tuck: 1.0, air: 0.4, thrust: 100 / 3.6 / 6, stick: 45, landGain: 0.8, landMax: 50 };
 const oceanAmp = z => lerp(OC.a0, OC.a1, clamp(-z / OC.grow, 0, 1));
 // giant sets: three incommensurate swells (uneven spacing) that build from ~8 km out to ~45 m tall by ~22 km
 const oceanBig = z => { const f = clamp((-z - 8000) / 14000, 0, 1); return OC.big * f * f * (3 - 2 * f); };
@@ -859,7 +859,7 @@ function makePowerup(type, x, y, z) {
 function activatePowerup(type) {
   const prev = pu && pu.type;
   pu = { type, t: PU[type].dur };
-  popup(PU[type].label + ' — ' + (type === 'thrust' && LEVEL === 2 ? '+250 km/h burst' : PU[type].hint), 'tier', PU[type].css);
+  popup(PU[type].label + ' — ' + (type === 'thrust' && LEVEL === 2 ? '+100 km/h burst' : PU[type].hint), 'tier', PU[type].css);
   arpeggio(); rumble(0.4, 0.8, 300);
   if (type === 'jet' && P.grounded && P.state === 'ride') { P.vy += 6; leaveGround(true); }
   syncPowerupHud(true);
