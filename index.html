@@ -202,7 +202,7 @@
       <div class="ctl-r"><span class="act">Carve<small>spin in the air</small></span><span class="keys"><kbd>A</kbd><kbd>D</kbd><kbd>←</kbd><kbd>→</kbd></span><span class="keys">Left stick · D-pad</span></div>
       <div class="ctl-r"><span class="act">Tight carve<small>sharp turn, sheds speed</small></span><span class="keys"><kbd>Q</kbd><kbd>E</kbd> · <kbd>Shift</kbd>+<kbd>A</kbd>/<kbd>D</kbd></span><span class="keys"><kbd>LB</kbd><kbd>RB</kbd> on the ground</span></div>
       <div class="ctl-r"><span class="act">Tuck<small>frontflip in the air</small></span><span class="keys"><kbd>W</kbd><kbd>↑</kbd></span><span class="keys">Stick up · <kbd>RT</kbd></span></div>
-      <div class="ctl-r"><span class="act">Brake<small>backflip in the air</small></span><span class="keys"><kbd>S</kbd><kbd>↓</kbd></span><span class="keys">Stick down · <kbd>LT</kbd></span></div>
+      <div class="ctl-r"><span class="act">Brake<small>backflip in the air</small></span><span class="keys"><kbd>S</kbd><kbd>↓</kbd></span><span class="keys">Stick down (flips in the air) · <kbd>LT</kbd>/<kbd>ZL</kbd> brake only</span></div>
       <div class="ctl-r"><span class="act">Ollie<small>pop off a rail</small></span><span class="keys"><kbd>Space</kbd></span><span class="keys"><kbd>A</kbd></span></div>
       <div class="ctl-r"><span class="act">Grab<small>hold in the air</small></span><span class="keys"><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd><kbd>Shift</kbd></span><span class="keys"><kbd>X</kbd> Indy · <kbd>B</kbd> Melon · <kbd>LB</kbd><kbd>RB</kbd></span></div>
       <div class="ctl-r"><span class="act">Violet Flame boost<small>when the meter is full</small></span><span class="keys"><kbd>F</kbd></span><span class="keys"><kbd>Y</kbd></span></div>
@@ -1126,7 +1126,7 @@ addEventListener('keyup', e => { const k = MAP[e.code]; if (k) keys[k] = false; 
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; if (mode === 'play') togglePause(); });
 // gamepad (standard mapping)
 const padKeys = {}; let padPrev = [], padAxisX = 0, padSeen = false;
-const PAD_BTN = { 0: 'jump', 2: 'indy', 1: 'melon', 4: ['method', 'carveL'], 5: ['indy', 'carveR'], 3: 'boost', 12: 'up', 13: 'down', 14: 'left', 15: 'right', 7: 'up', 6: 'down' };
+const PAD_BTN = { 0: 'jump', 2: 'indy', 1: 'melon', 4: ['method', 'carveL'], 5: ['indy', 'carveR'], 3: 'boost', 12: 'up', 13: 'down', 14: 'left', 15: 'right', 7: 'up', 6: 'brake' }; // LT / ZL brakes only — it never flips you
 function pollPad() {
   let gp = null;
   try { const list = navigator.getGamepads ? navigator.getGamepads() : []; for (const g of list) if (g && g.connected) { gp = g; break; } } catch (e) {}
@@ -1616,7 +1616,7 @@ function updateRide(dt, steerIn, up, down) {
       // surfing: dropping down a face gives more than climbing the next one takes, plus the swell's push
       const acc = (L2 ? G * gradeAlong * (gradeAlong > 0 ? OC.down : OC.up) + OC.push : G * gradeAlong * 1.05) + (boostT > 0 ? 30 : 0) + (puOn('thrust') ? (L2 ? OC.thrust : 60) : 0) + (up ? (L2 ? OC.tuck : 3) : 0) + (onStraight && !L2 ? 34 : 0);
       const drag = (L2 ? 0.000005 : (up ? 0.00108 : 0.0018)) * sp * sp * (puOn('thrust') ? 0.15 : boostT > 0 ? 0.35 : 1) * (onStraight && !L2 ? 0.03 : 1);
-      const fric = (down || finished ? 18 : L2 ? 0.3 : 0.8) + Math.abs(P.steer) * sp * (P.tight ? 0.1 : 0.06) * (L2 ? 0.4 : 1);
+      const fric = (down || key('brake') || finished ? 18 : L2 ? 0.3 : 0.8) + Math.abs(P.steer) * sp * (P.tight ? 0.1 : 0.06) * (L2 ? 0.4 : 1);
       const cap = capNow(), before = sp;
       sp = Math.max(finished ? 0 : 7, sp + (acc - drag - fric) * dt);
       // never pushed above the limit; if already above it (boost/thrusters ended), ease down
@@ -1844,7 +1844,7 @@ function emitFire(dt) {
   }
   // snow spray on carves
   if (P.grounded && P.state === 'ride' && !P.grind && sp > 12) {
-    const carve = Math.abs(P.steer) * (P.tight ? 1.8 : 1) + (key('down') ? 1 : 0);
+    const carve = Math.abs(P.steer) * (P.tight ? 1.8 : 1) + (key('down') || key('brake') ? 1 : 0);
     if (carve > 0.25) {
       const cnt = Math.min(10, carve * Math.min(sp, 40) * dt * 3 + Math.random()) | 0;
       const rx = Math.cos(P.heading), rz = Math.sin(P.heading), side = -Math.sign(P.steer || 1);

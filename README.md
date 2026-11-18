@@ -20,7 +20,7 @@ Three.js r160 loads from the jsDelivr CDN, so you need an internet connection. U
 | Carve / spin in air | A D or ← → | Left stick / D-pad |
 | **Tight carve** (sharp turn, sheds speed) | Q / E, or Shift + A/D | LB / RB on the ground |
 | Tuck / frontflip in air | W or ↑ | Stick up / RT |
-| **Brake** (on the ground) / backflip in air | S or ↓ | Stick down / LT |
+| **Brake** (on the ground) / backflip in air | S or ↓ | Stick down (LT / ZL brakes only, never flips) |
 | Ollie, pop off rails | Space | A |
 | Grabs in the air (Indy, Melon, Method) | J K L / Shift | X (Indy), B (Melon), LB (Method), RB (Indy) |
 | Violet Flame boost (meter full) | F | Y |
