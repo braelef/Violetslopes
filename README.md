@@ -77,4 +77,7 @@ Open **⚙ Settings** from the start screen or the pause screen. Your choices ar
 
 - Game code: generated with Claude.
 - Engine: [three.js](https://threejs.org) (MIT), loaded from jsDelivr.
-- Music: *The Blue Danube*, Op. 314 (Johann Strauss II), performed by Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 10 March 2024. Recording courtesy of [www.classicals.de](https://www.classicals.de), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The file in `music/blue-danube.mp3` is unmodified (renamed only).
+- Music, level 1: *The Blue Danube*, Op. 314 (Johann Strauss II), performed by Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 10 March 2024. Recording courtesy of [www.classicals.de](https://www.classicals.de), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The file in `music/blue-danube.mp3` is unmodified (renamed only).
+- Music, level 2: *Hungarian Rhapsody No. 2*, S.244/2 (Franz Liszt), recorded, produced and published by Gregor Quendel. Courtesy of [www.classicals.de](https://www.classicals.de), licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). The file is `music/hungarian-rhapsody-2.mp3`, unmodified (renamed only).
+- Music, level 3: *Clair de Lune*, L. 75 (Claude Debussy), concert grand version, recorded, produced and published by Gregor Quendel. Courtesy of [www.classicals.de](https://www.classicals.de), licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/). The file is `music/clair-de-lune.mp3`, unmodified (renamed only).
+- The level 2 and 3 recordings are licensed for **non-commercial use only** (CC BY-NC 4.0).

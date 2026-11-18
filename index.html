@@ -210,7 +210,7 @@
     </div>
     <div class="tip">Chain tricks, hoops &amp; grinds to change the colour of your flame</div>
     <div class="tiers" id="tierLegend"></div>
-    <div class="credit">Music: <i>The Blue Danube</i>, Op. 314 (Johann Strauss II) — Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 2024. Recording courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</div>
+    <div class="credit">Music (level 1): <i>The Blue Danube</i>, Op. 314 (Johann Strauss II) — Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 2024. Recording courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.<br>Music (level 2): <i>Hungarian Rhapsody No. 2</i>, S.244/2 (Franz Liszt) — recorded, produced and published by Gregor Quendel. Courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>.<br>Music (level 3): <i>Clair de Lune</i>, L. 75 (Claude Debussy), concert grand version — recorded, produced and published by Gregor Quendel. Courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>.</div>
   </div>
   <div class="panel hidden setView" id="menuSet" style="margin:auto;padding:22px 18px;max-width:640px">
     <h1 style="font-size:clamp(36px,5vw,56px)">SETTINGS</h1>
@@ -227,7 +227,7 @@
       <button class="go" id="againBtn">RIDE AGAIN</button>
       <button class="go" id="nextBtn" style="display:none">LEVEL 2 →</button>
     </div>
-    <div class="credit">Music: <i>The Blue Danube</i>, Op. 314 (Johann Strauss II) — Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 2024. Recording courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</div>
+    <div class="credit">Music (level 1): <i>The Blue Danube</i>, Op. 314 (Johann Strauss II) — Das Orchester Tsumugi / Takashi Inoue, live at Fukuoka Symphony Hall, 2024. Recording courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.<br>Music (level 2): <i>Hungarian Rhapsody No. 2</i>, S.244/2 (Franz Liszt) — recorded, produced and published by Gregor Quendel. Courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>.<br>Music (level 3): <i>Clair de Lune</i>, L. 75 (Claude Debussy), concert grand version — recorded, produced and published by Gregor Quendel. Courtesy of <a href="https://www.classicals.de" target="_blank" rel="noopener">www.classicals.de</a>, licensed <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>.</div>
   </div>
 </div>
 <div class="overlay hidden" id="pause">
@@ -1238,7 +1238,17 @@ const CHORDS = ['D','D','D','D', 'D','D','A7','A7', 'A7','A7','A7','A7', 'A7','A
                 'D','D','D','D', 'D','D','G','G', 'Em','Em','E7','A7', 'D','A7','A7','D'];
 const DANUBE_EV = DANUBE.map(bar => { let b = 0; const ev = []; for (const [n, d, k] of bar) { if (n) ev.push({ beat: b, m: midi(n), dur: d, ping: k === 'p' }); b += d; } return ev; });
 const BEAT = 60 / 168;
-const musicEl = new Audio('music/blue-danube.mp3');
+// per-level soundtrack
+const TRACKS = { 1: ['music/blue-danube.mp3', 'The Blue Danube'], 2: ['music/hungarian-rhapsody-2.mp3', 'Hungarian Rhapsody No. 2'], 3: ['music/clair-de-lune.mp3', 'Clair de Lune'] };
+const musicEl = new Audio(TRACKS[LEVEL][0]);
+function syncTrack() {
+  const want = TRACKS[LEVEL][0];
+  if (musicEl.getAttribute('src') === want) return false;
+  const wasPlaying = !musicEl.paused;
+  musicEl.src = want; musicEl.load();
+  if (wasPlaying && musicOn) startRecording();
+  return true;
+}
 musicEl.loop = true; musicEl.preload = 'auto';
 let useSynth = false, recGain = null;
 musicEl.addEventListener('error', () => { useSynth = true; });
@@ -1319,7 +1329,7 @@ function toggleMusic() {
   if (musicGain) musicGain.gain.setTargetAtTime(musicOn ? 0.7 : 0, actx.currentTime, 0.1);
   if (!useSynth) { if (musicOn) startRecording(); else musicEl.pause(); }
   try { localStorage.setItem('violetSlopesMusic', musicOn ? '1' : '0'); } catch (e) {}
-  popup(musicOn ? 'Music on — The Blue Danube' : 'Music off', 'minor');
+  popup(musicOn ? 'Music on — ' + TRACKS[LEVEL][1] : 'Music off', 'minor');
   syncSoundButtons();
 }
 
@@ -2023,6 +2033,7 @@ function showResults(kind) {
 }
 function applyLevel() {
   const L2 = LEVEL === 2, L3 = LEVEL === 3;
+  if (typeof syncTrack === 'function') syncTrack();
   applyGravity();
   terrain.visible = LEVEL === 1; ocean.visible = L2; finish.visible = LEVEL === 1; snow.visible = LEVEL === 1;
   for (const m of celestial.userData.mountains) m.visible = LEVEL === 1;
